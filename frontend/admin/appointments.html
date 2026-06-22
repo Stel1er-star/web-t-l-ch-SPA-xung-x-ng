@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Lịch Hẹn — SpaProMax</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/components.css">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<!-- Status Update Modal -->
+<div class="modal-overlay" id="status-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Cập Nhật Trạng Thái</div>
+      <button class="modal-close" onclick="document.getElementById('status-modal').classList.remove('open')">✕</button>
+    </div>
+    <div id="modal-appt-info" style="margin-bottom:16px"></div>
+    <div class="form-group" style="margin-bottom:14px">
+      <label class="form-label">Trạng Thái Mới</label>
+      <select class="form-select" id="new-status">
+        <option value="pending">Chờ xác nhận</option>
+        <option value="confirmed">Đã xác nhận</option>
+        <option value="in-progress">Đang khám</option>
+        <option value="completed">Hoàn thành</option>
+        <option value="cancelled">Đã hủy</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Ghi chú bác sĩ</label>
+      <textarea class="form-input form-textarea" id="modal-medical-note" placeholder="Kết quả khám, chẩn đoán..." style="min-height:80px"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="document.getElementById('status-modal').classList.remove('open')">Hủy</button>
+      <button class="btn btn-primary" id="save-status-btn">Lưu Thay Đổi</button>
+    </div>
+  </div>
+</div>
+
+<div class="main-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="sidebar-logo-icon">🌿</div><span class="sidebar-logo-text">SpaProMax</span></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Tổng Quan</div>
+        <a href="dashboard.html" class="sidebar-link"><span class="sidebar-link-icon">📊</span> Dashboard</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Quản Lý</div>
+        <a href="appointments.html" class="sidebar-link active"><span class="sidebar-link-icon">🗓️</span> Lịch Hẹn</a>
+        <a href="users.html" class="sidebar-link"><span class="sidebar-link-icon">👥</span> Người Dùng</a>
+        <a href="services.html" class="sidebar-link"><span class="sidebar-link-icon">✨</span> Dịch Vụ</a>
+        <a href="shifts.html" class="sidebar-link"><span class="sidebar-link-icon">🕐</span> Ca Làm Việc</a>
+      </div>
+      <div class="sidebar-section">
+        <a href="../index.html" class="sidebar-link"><span class="sidebar-link-icon">🌐</span> Trang Chủ</a>
+        <a class="sidebar-link" data-action="logout"><span class="sidebar-link-icon">🚪</span> Đăng Xuất</a>
+      </div>
+    </nav>
+    <div class="sidebar-user">
+      <img id="sidebar-user-avatar" src="" class="sidebar-user-avatar">
+      <div><div class="sidebar-user-name" id="sidebar-user-name">—</div><div class="sidebar-user-role" id="sidebar-user-role">admin</div></div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <div style="font-size:14px;color:var(--text-secondary)">Admin / Quản Lý Lịch Hẹn</div>
+      <div class="topbar-actions">
+        <input type="date" id="filter-date" class="form-input" style="width:auto;padding:7px 12px;font-size:13px">
+        <button class="btn btn-ghost btn-sm" onclick="loadAppts()">🔄 Làm Mới</button>
+      </div>
+    </div>
+    <div class="page-container">
+      <h1 class="page-title font-heading">Quản Lý Lịch Hẹn</h1>
+      <!-- Filters -->
+      <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+        <button class="filter-tab active" data-status="">Tất Cả</button>
+        <button class="filter-tab" data-status="pending">⏳ Chờ</button>
+        <button class="filter-tab" data-status="confirmed">✅ Xác Nhận</button>
+        <button class="filter-tab" data-status="in-progress">🔄 Đang Khám</button>
+        <button class="filter-tab" data-status="completed">🎉 Hoàn Thành</button>
+        <button class="filter-tab" data-status="cancelled">❌ Hủy</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead><tr>
+            <th>Khách Hàng</th><th>Dịch Vụ</th><th>Bác Sĩ / KTV</th>
+            <th>Ngày & Giờ</th><th>Giá</th><th>Trạng Thái</th><th>Hành Động</th>
+          </tr></thead>
+          <tbody id="appt-tbody">
+            <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted)">Đang tải...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script>
+Auth.requireLogin('admin');
+populateSidebarUser();
+
+let allAppts = [], filterStatus = '', selectedAppt = null;
+
+document.querySelectorAll('.filter-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    filterStatus = tab.dataset.status;
+    renderTable();
+  });
+});
+
+function renderTable() {
+  const filtered = filterStatus ? allAppts.filter(a => a.status === filterStatus) : allAppts;
+  const tbody = document.getElementById('appt-tbody');
+  tbody.innerHTML = filtered.length ? filtered.map(a => `
+    <tr>
+      <td class="text-primary-td">${a.customerName}</td>
+      <td><span>${a.serviceIcon} ${a.serviceName}</span><div style="font-size:11px;color:var(--text-muted)">${Fmt.categoryVi(a.serviceCategory)}</div></td>
+      <td style="color:var(--text-secondary)">${a.staffName}<div style="font-size:11px;color:var(--text-muted)">${a.staffSpecialty||''}</div></td>
+      <td>${Fmt.dateShort(a.date)} <span style="color:var(--text-muted)">${a.time}</span></td>
+      <td style="color:var(--gold);font-weight:600">${Fmt.currency(a.price)}</td>
+      <td>${Fmt.statusBadge(a.status)}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="openStatusModal(${JSON.stringify(a).replace(/"/g,'&quot;')})">✏️ Sửa</button></td>
+    </tr>
+  `).join('') : `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted)">Không có lịch hẹn nào</td></tr>`;
+}
+
+async function loadAppts() {
+  const date = document.getElementById('filter-date').value;
+  try {
+    allAppts = await API.getAppointments(date ? { date } : {});
+    renderTable();
+  } catch(e) { Toast.error(e.message); }
+}
+
+function openStatusModal(appt) {
+  selectedAppt = appt;
+  document.getElementById('modal-appt-info').innerHTML = `
+    <div style="background:var(--glass-bg);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:13px">
+      <b>${appt.serviceIcon} ${appt.serviceName}</b><br>
+      <span style="color:var(--text-secondary)">👤 ${appt.customerName} • 👨‍⚕️ ${appt.staffName}</span><br>
+      <span style="color:var(--text-muted)">📅 ${Fmt.dateShort(appt.date)} ${appt.time}</span>
+    </div>
+  `;
+  document.getElementById('new-status').value = appt.status;
+  document.getElementById('modal-medical-note').value = appt.medicalNote || '';
+  document.getElementById('status-modal').classList.add('open');
+}
+
+document.getElementById('save-status-btn').addEventListener('click', async () => {
+  try {
+    await API.updateApptStatus(selectedAppt.id, {
+      status: document.getElementById('new-status').value,
+      medicalNote: document.getElementById('modal-medical-note').value
+    });
+    document.getElementById('status-modal').classList.remove('open');
+    Toast.success('Đã cập nhật');
+    loadAppts();
+  } catch(e) { Toast.error(e.message); }
+});
+
+loadAppts();
+</script>
+</body>
+</html>

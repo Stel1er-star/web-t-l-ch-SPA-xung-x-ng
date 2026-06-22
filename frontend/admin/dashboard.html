@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — SpaProMax</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    .main-layout { display: flex; }
+    .chart-container { position: relative; height: 280px; }
+  </style>
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="main-layout">
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🌿</div>
+      <span class="sidebar-logo-text">SpaProMax</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Tổng Quan</div>
+        <a href="dashboard.html" class="sidebar-link active" id="nav-dashboard">
+          <span class="sidebar-link-icon">📊</span> Dashboard
+        </a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Quản Lý</div>
+        <a href="appointments.html" class="sidebar-link" id="nav-appointments">
+          <span class="sidebar-link-icon">🗓️</span> Lịch Hẹn
+          <span class="sidebar-badge" id="pending-badge" style="display:none">0</span>
+        </a>
+        <a href="users.html" class="sidebar-link">
+          <span class="sidebar-link-icon">👥</span> Người Dùng
+        </a>
+        <a href="services.html" class="sidebar-link">
+          <span class="sidebar-link-icon">✨</span> Dịch Vụ
+        </a>
+        <a href="shifts.html" class="sidebar-link">
+          <span class="sidebar-link-icon">🕐</span> Ca Làm Việc
+        </a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Hệ Thống</div>
+        <a href="../index.html" class="sidebar-link">
+          <span class="sidebar-link-icon">🌐</span> Trang Chủ
+        </a>
+        <a class="sidebar-link" data-action="logout">
+          <span class="sidebar-link-icon">🚪</span> Đăng Xuất
+        </a>
+      </div>
+    </nav>
+    <div class="sidebar-user">
+      <img id="sidebar-user-avatar" src="" alt="Avatar" class="sidebar-user-avatar">
+      <div>
+        <div class="sidebar-user-name" id="sidebar-user-name">—</div>
+        <div class="sidebar-user-role" id="sidebar-user-role">admin</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN CONTENT ═══ -->
+  <main class="main-content">
+    <!-- Topbar -->
+    <div class="topbar">
+      <div style="font-size:14px;color:var(--text-secondary)">
+        <span style="color:var(--text-muted)">Admin</span> / Dashboard
+      </div>
+      <div class="topbar-actions">
+        <div style="position:relative">
+          <button class="topbar-action-btn" id="notif-btn" title="Thông báo">🔔
+            <span class="notif-dot" id="notif-badge" style="display:none"></span>
+          </button>
+          <div class="notif-panel" id="notif-panel">
+            <div class="notif-panel-header">
+              <span class="notif-panel-title">Thông Báo</span>
+              <button class="btn btn-ghost btn-sm" onclick="API.readAll().then(loadNotifCount)">Đọc tất cả</button>
+            </div>
+            <div id="notif-list" style="max-height:320px;overflow-y:auto"></div>
+          </div>
+        </div>
+        <div style="width:36px;height:36px;border-radius:50%;overflow:hidden;border:2px solid var(--purple)">
+          <img id="topbar-avatar" src="" style="width:100%;height:100%;object-fit:cover">
+        </div>
+      </div>
+    </div>
+
+    <!-- Page Content -->
+    <div class="page-container">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px">
+        <div>
+          <h1 class="page-title font-heading" id="greeting">Xin chào! 👋</h1>
+          <p class="page-subtitle" id="greeting-date">—</p>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-ghost btn-sm" onclick="loadDashboard()">🔄 Làm Mới</button>
+          <button class="btn btn-primary btn-sm" onclick="window.location.href='appointments.html'">🗓️ Xem Lịch Hẹn</button>
+        </div>
+      </div>
+
+      <!-- ─── Stat Cards ─── -->
+      <div class="grid-4" id="stat-cards" style="margin-bottom:28px">
+        <div class="stat-card purple"><div class="stat-icon purple">🗓️</div><div><div class="stat-label">Tổng Lịch Hẹn</div><div class="stat-value" id="stat-total">—</div></div></div>
+        <div class="stat-card gold"><div class="stat-icon gold">💰</div><div><div class="stat-label">Doanh Thu</div><div class="stat-value" id="stat-revenue">—</div></div></div>
+        <div class="stat-card teal"><div class="stat-icon teal">👥</div><div><div class="stat-label">Khách Hàng</div><div class="stat-value" id="stat-customers">—</div></div></div>
+        <div class="stat-card emerald"><div class="stat-icon emerald">⭐</div><div><div class="stat-label">Đánh Giá TB</div><div class="stat-value" id="stat-rating">—</div></div></div>
+      </div>
+
+      <!-- ─── Row 2: Today's stats ─── -->
+      <div class="grid-4" style="margin-bottom:28px">
+        <div class="stat-card blue"><div class="stat-icon blue">📅</div><div><div class="stat-label">Hôm Nay</div><div class="stat-value" id="stat-today">—</div><div class="stat-change up">↑ Lịch hẹn</div></div></div>
+        <div class="stat-card rose"><div class="stat-icon rose">⏳</div><div><div class="stat-label">Chờ Xác Nhận</div><div class="stat-value" id="stat-pending">—</div><div class="stat-change" style="color:var(--gold)">Cần xử lý</div></div></div>
+        <div class="stat-card purple"><div class="stat-icon purple">👨‍⚕️</div><div><div class="stat-label">Đội Ngũ</div><div class="stat-value" id="stat-staff">—</div></div></div>
+        <div class="stat-card emerald"><div class="stat-icon emerald">✅</div><div><div class="stat-label">Hoàn Thành</div><div class="stat-value" id="stat-completed">—</div></div></div>
+      </div>
+
+      <!-- ─── Row 3: Charts + Recent ─── -->
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;margin-bottom:28px">
+        <!-- Revenue Chart -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Doanh Thu Theo Tháng</div>
+              <div class="card-subtitle">6 tháng gần đây</div>
+            </div>
+            <span style="font-size:12px;background:rgba(124,58,237,0.15);color:var(--purple-lighter);padding:4px 10px;border-radius:20px;border:1px solid rgba(124,58,237,0.3)">Hoàn Thành</span>
+          </div>
+          <div class="chart-container"><canvas id="revenue-chart"></canvas></div>
+        </div>
+
+        <!-- Service Donut Chart -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Phân Bổ Dịch Vụ</div>
+          </div>
+          <div class="chart-container" style="height:220px"><canvas id="service-chart"></canvas></div>
+          <div id="service-legend" style="margin-top:12px;display:flex;flex-direction:column;gap:6px"></div>
+        </div>
+      </div>
+
+      <!-- ─── Row 4: Status + Recent Appointments ─── -->
+      <div style="display:grid;grid-template-columns:1fr 2fr;gap:24px">
+        <!-- Status Breakdown -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">Trạng Thái Lịch Hẹn</div></div>
+          <div id="status-breakdown" style="display:flex;flex-direction:column;gap:10px"></div>
+        </div>
+
+        <!-- Recent Appointments Table -->
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+            <div class="card-title">Lịch Hẹn Gần Đây</div>
+            <a href="appointments.html" class="btn btn-ghost btn-sm">Xem tất cả →</a>
+          </div>
+          <div class="table-wrapper" style="border:none;border-radius:0">
+            <table>
+              <thead><tr>
+                <th>Khách Hàng</th><th>Dịch Vụ</th><th>Nhân Viên</th><th>Ngày / Giờ</th><th>Trạng Thái</th><th>Giá</th>
+              </tr></thead>
+              <tbody id="recent-appts-tbody">
+                <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">Đang tải...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script>
+// Guard: admin only
+Auth.requireLogin('admin');
+populateSidebarUser();
+
+const user = Auth.getUser();
+document.getElementById('greeting').textContent = `Xin chào, ${user.name}! 👋`;
+document.getElementById('greeting-date').textContent = new Date().toLocaleDateString('vi-VN', { weekday:'long', day:'2-digit', month:'2-digit', year:'numeric' });
+
+// Topbar avatar
+const topbarAvatar = document.getElementById('topbar-avatar');
+topbarAvatar.src = user.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=7C3AED&color=fff`;
+
+// Charts
+let revenueChart, serviceChart;
+
+Chart.defaults.color = '#94A3B8';
+Chart.defaults.font.family = 'Inter';
+
+function initCharts(monthlyRevenue, serviceStats, statusStats) {
+  // Revenue Chart
+  const labels = monthlyRevenue.map(m => {
+    const [y, mo] = m.month.split('-');
+    return new Date(y, mo-1).toLocaleDateString('vi-VN', { month:'short', year:'numeric' });
+  });
+  const values = monthlyRevenue.map(m => m.revenue / 1000000); // Millions
+
+  if (revenueChart) revenueChart.destroy();
+  revenueChart = new Chart(document.getElementById('revenue-chart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Doanh Thu (triệu VNĐ)',
+        data: values,
+        borderColor: '#7C3AED',
+        backgroundColor: (ctx) => {
+          const gradient = ctx.chart.ctx.createLinearGradient(0,0,0,280);
+          gradient.addColorStop(0, 'rgba(124,58,237,0.4)');
+          gradient.addColorStop(1, 'rgba(124,58,237,0)');
+          return gradient;
+        },
+        borderWidth: 2.5,
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: '#7C3AED',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        backgroundColor: '#1A1A35', borderColor: 'rgba(124,58,237,0.5)', borderWidth: 1,
+        callbacks: { label: ctx => ` ${ctx.raw.toFixed(1)} triệu VNĐ` }
+      }},
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { callback: v => v + 'M' } }
+      }
+    }
+  });
+
+  // Service Donut
+  const COLORS = ['#7C3AED','#3B82F6','#06B6D4','#F59E0B','#10B981','#F43F5E','#A78BFA','#34D399'];
+  const svcLabels = serviceStats.map(s => s.name);
+  const svcData   = serviceStats.map(s => s.count);
+
+  if (serviceChart) serviceChart.destroy();
+  serviceChart = new Chart(document.getElementById('service-chart'), {
+    type: 'doughnut',
+    data: {
+      labels: svcLabels,
+      datasets: [{ data: svcData, backgroundColor: COLORS, borderColor: '#0D0D1A', borderWidth: 3, hoverOffset: 6 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      cutout: '65%',
+      plugins: { legend: { display: false }, tooltip: {
+        backgroundColor: '#1A1A35', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
+      }}
+    }
+  });
+
+  // Legend
+  const legend = document.getElementById('service-legend');
+  legend.innerHTML = serviceStats.slice(0,5).map((s,i) => `
+    <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px">
+      <div style="display:flex;align-items:center;gap:6px">
+        <div style="width:10px;height:10px;border-radius:2px;background:${COLORS[i]};flex-shrink:0"></div>
+        <span style="color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px">${s.name}</span>
+      </div>
+      <span style="color:var(--text-primary);font-weight:600">${s.count}</span>
+    </div>
+  `).join('');
+
+  // Status breakdown
+  const statusMap = { pending:'Chờ xác nhận', confirmed:'Đã xác nhận', 'in-progress':'Đang thực hiện', completed:'Hoàn thành', cancelled:'Đã hủy' };
+  const statusColors = { pending:['var(--gold)','rgba(245,158,11,0.2)'], confirmed:['var(--blue-light)','rgba(59,130,246,0.2)'], 'in-progress':['var(--purple-lighter)','rgba(124,58,237,0.2)'], completed:['var(--emerald-light)','rgba(16,185,129,0.2)'], cancelled:['var(--rose-light)','rgba(244,63,94,0.2)'] };
+  const total = statusStats.reduce((s,r) => s + r.count, 0);
+  const statusEl = document.getElementById('status-breakdown');
+  statusEl.innerHTML = statusStats.map(s => {
+    const pct = total > 0 ? Math.round(s.count / total * 100) : 0;
+    const [color, bg] = statusColors[s.status] || ['#fff','rgba(255,255,255,0.1)'];
+    return `
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px">
+          <span style="color:var(--text-secondary)">${statusMap[s.status] || s.status}</span>
+          <span style="font-weight:600">${s.count} <span style="color:var(--text-muted)">(${pct}%)</span></span>
+        </div>
+        <div style="height:6px;background:var(--bg-tertiary);border-radius:3px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:${color};border-radius:3px;transition:width 1s ease"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// Recent appointments table
+function renderRecentAppts(appts) {
+  const tbody = document.getElementById('recent-appts-tbody');
+  if (!appts.length) { tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">Chưa có lịch hẹn nào</td></tr>`; return; }
+  tbody.innerHTML = appts.map(a => `
+    <tr>
+      <td class="text-primary-td">${a.customerName}</td>
+      <td><span>${a.serviceIcon} ${a.serviceName}</span></td>
+      <td style="color:var(--text-secondary)">${a.staffName}</td>
+      <td style="font-size:13px">${Fmt.dateShort(a.date)} <span style="color:var(--text-muted)">${a.time}</span></td>
+      <td>${Fmt.statusBadge(a.status)}</td>
+      <td style="color:var(--gold);font-weight:600">${Fmt.currency(a.price)}</td>
+    </tr>
+  `).join('');
+}
+
+// Load everything
+async function loadDashboard() {
+  try {
+    const data = await API.getAdminDashboard();
+    const { summary, monthlyRevenue, serviceStats, statusStats, recentAppts } = data;
+
+    // Stats
+    animateCount(document.getElementById('stat-total'), summary.totalAppointments);
+    document.getElementById('stat-revenue').textContent = Fmt.currency(summary.totalRevenue);
+    animateCount(document.getElementById('stat-customers'), summary.totalCustomers);
+    document.getElementById('stat-rating').textContent = (summary.avgRating || 0) + ' ⭐';
+    animateCount(document.getElementById('stat-today'), summary.todayAppointments);
+    animateCount(document.getElementById('stat-pending'), summary.pendingCount);
+    animateCount(document.getElementById('stat-staff'), summary.totalStaff);
+    const completedStat = statusStats.find(s => s.status === 'completed');
+    animateCount(document.getElementById('stat-completed'), completedStat?.count || 0);
+
+    // Pending badge in sidebar
+    const pb = document.getElementById('pending-badge');
+    if (summary.pendingCount > 0) { pb.textContent = summary.pendingCount; pb.style.display = 'flex'; }
+
+    initCharts(monthlyRevenue, serviceStats, statusStats);
+    renderRecentAppts(recentAppts);
+  } catch (err) {
+    Toast.error('Không thể tải dữ liệu: ' + err.message);
+  }
+}
+
+// Notifications
+document.getElementById('notif-btn').addEventListener('click', async (e) => {
+  e.stopPropagation();
+  const panel = document.getElementById('notif-panel');
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) {
+    try {
+      const notifs = await API.getNotifications();
+      document.getElementById('notif-list').innerHTML = notifs.length ?
+        notifs.map(n => `
+          <div class="notif-item ${n.isRead ? '' : 'unread'}">
+            <div class="notif-icon">${n.type === 'appointment' ? '🗓️' : n.type === 'reminder' ? '🔔' : '📢'}</div>
+            <div><div class="notif-title">${n.title}</div><div class="notif-msg">${n.message}</div><div class="notif-time">${Fmt.timeAgo(n.createdAt)}</div></div>
+          </div>`).join('') :
+        `<div style="padding:32px;text-align:center;color:var(--text-muted)">Không có thông báo</div>`;
+    } catch {}
+  }
+});
+document.addEventListener('click', () => document.getElementById('notif-panel')?.classList.remove('open'));
+
+loadDashboard();
+loadNotifCount();
+</script>
+</body>
+</html>

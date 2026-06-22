@@ -1,0 +1,94 @@
+/* ═══════════════════════════════════════════════════════
+   SpaProMax — Design System Variables (Pivora CRM Style)
+   ═══════════════════════════════════════════════════════ */
+
+:root {
+  /* ─── Background ─────────────────────────────────── */
+  --bg-primary:     #0D0D1A;
+  --bg-secondary:   #12122A;
+  --bg-tertiary:    #1A1A35;
+  --bg-card:        rgba(255, 255, 255, 0.04);
+  --bg-card-hover:  rgba(255, 255, 255, 0.07);
+  --bg-overlay:     rgba(13, 13, 26, 0.85);
+
+  /* ─── Brand Colors ───────────────────────────────── */
+  --purple:         #7C3AED;
+  --purple-light:   #8B5CF6;
+  --purple-lighter: #A78BFA;
+  --purple-dark:    #5B21B6;
+  --blue:           #3B82F6;
+  --blue-light:     #60A5FA;
+  --teal:           #06B6D4;
+  --teal-light:     #22D3EE;
+  --gold:           #F59E0B;
+  --gold-light:     #FCD34D;
+  --rose:           #F43F5E;
+  --rose-light:     #FB7185;
+  --emerald:        #10B981;
+  --emerald-light:  #34D399;
+
+  /* ─── Gradients ──────────────────────────────────── */
+  --grad-purple:    linear-gradient(135deg, #7C3AED, #5B21B6);
+  --grad-blue:      linear-gradient(135deg, #3B82F6, #1D4ED8);
+  --grad-hero:      linear-gradient(135deg, #7C3AED 0%, #3B82F6 50%, #06B6D4 100%);
+  --grad-card-1:    linear-gradient(135deg, #7C3AED22, #3B82F611);
+  --grad-gold:      linear-gradient(135deg, #F59E0B, #D97706);
+  --grad-emerald:   linear-gradient(135deg, #10B981, #059669);
+  --grad-rose:      linear-gradient(135deg, #F43F5E, #E11D48);
+  --grad-teal:      linear-gradient(135deg, #06B6D4, #0891B2);
+
+  /* ─── Glass Effect ───────────────────────────────── */
+  --glass-bg:       rgba(255, 255, 255, 0.05);
+  --glass-bg-2:     rgba(255, 255, 255, 0.08);
+  --glass-border:   rgba(255, 255, 255, 0.10);
+  --glass-border-2: rgba(255, 255, 255, 0.15);
+  --glass-blur:     blur(20px);
+  --glass-blur-sm:  blur(10px);
+
+  /* ─── Glow Shadows ───────────────────────────────── */
+  --glow-purple:    0 0 30px rgba(124, 58, 237, 0.35);
+  --glow-purple-sm: 0 0 15px rgba(124, 58, 237, 0.25);
+  --glow-blue:      0 0 30px rgba(59, 130, 246, 0.35);
+  --glow-teal:      0 0 30px rgba(6, 182, 212, 0.35);
+  --glow-gold:      0 0 20px rgba(245, 158, 11, 0.30);
+  --shadow-card:    0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-modal:   0 25px 60px rgba(0, 0, 0, 0.6);
+
+  /* ─── Text Colors ────────────────────────────────── */
+  --text-primary:   #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted:     #475569;
+  --text-disabled:  #334155;
+
+  /* ─── Status Colors ──────────────────────────────── */
+  --status-pending:     #F59E0B;
+  --status-confirmed:   #3B82F6;
+  --status-in-progress: #8B5CF6;
+  --status-completed:   #10B981;
+  --status-cancelled:   #F43F5E;
+
+  /* ─── Border ─────────────────────────────────────── */
+  --border:         rgba(255, 255, 255, 0.08);
+  --border-active:  rgba(124, 58, 237, 0.6);
+
+  /* ─── Sidebar ────────────────────────────────────── */
+  --sidebar-width:  260px;
+  --sidebar-collapsed: 72px;
+
+  /* ─── Spacing ────────────────────────────────────── */
+  --radius-sm:  8px;
+  --radius:     12px;
+  --radius-lg:  16px;
+  --radius-xl:  24px;
+  --radius-full: 9999px;
+
+  /* ─── Typography ─────────────────────────────────── */
+  --font-heading: 'Playfair Display', Georgia, serif;
+  --font-body:    'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+
+  /* ─── Transitions ────────────────────────────────── */
+  --transition:     all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}

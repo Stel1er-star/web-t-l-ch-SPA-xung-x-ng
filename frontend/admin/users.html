@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Người Dùng — SpaProMax</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/components.css">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<!-- User Modal -->
+<div class="modal-overlay" id="user-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Thêm Người Dùng</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <form id="user-form" style="display:flex;flex-direction:column;gap:14px">
+      <input type="hidden" id="user-id">
+      <div class="grid-2" style="gap:12px">
+        <div class="form-group">
+          <label class="form-label">Họ và tên *</label>
+          <input type="text" id="u-name" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Vai trò *</label>
+          <select id="u-role" class="form-select" required onchange="toggleFields()">
+            <option value="customer">Khách hàng</option>
+            <option value="doctor">Bác sĩ / KTV</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-2" style="gap:12px">
+        <div class="form-group">
+          <label class="form-label">Tên đăng nhập *</label>
+          <input type="text" id="u-username" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mật khẩu <span id="pwd-optional">(để trống nếu không đổi)</span></label>
+          <input type="password" id="u-password" class="form-input" placeholder="Ít nhất 6 ký tự">
+        </div>
+      </div>
+      <div class="grid-2" style="gap:12px">
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" id="u-email" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Số điện thoại</label>
+          <input type="tel" id="u-phone" class="form-input">
+        </div>
+      </div>
+      <div class="form-group" id="specialty-field">
+        <label class="form-label">Chuyên khoa</label>
+        <input type="text" id="u-specialty" class="form-input" placeholder="Ví dụ: Khám tổng quát, Chăm sóc da...">
+      </div>
+      <div class="modal-footer" style="margin-top:8px">
+        <button type="button" class="btn btn-ghost" onclick="closeModal()">Hủy</button>
+        <button type="submit" class="btn btn-primary">Lưu</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="main-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="sidebar-logo-icon">🌿</div><span class="sidebar-logo-text">SpaProMax</span></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <a href="dashboard.html" class="sidebar-link"><span class="sidebar-link-icon">📊</span> Dashboard</a>
+        <a href="appointments.html" class="sidebar-link"><span class="sidebar-link-icon">🗓️</span> Lịch Hẹn</a>
+        <a href="users.html" class="sidebar-link active"><span class="sidebar-link-icon">👥</span> Người Dùng</a>
+        <a href="services.html" class="sidebar-link"><span class="sidebar-link-icon">✨</span> Dịch Vụ</a>
+        <a href="shifts.html" class="sidebar-link"><span class="sidebar-link-icon">🕐</span> Ca Làm Việc</a>
+      </div>
+      <div class="sidebar-section">
+        <a href="../index.html" class="sidebar-link"><span class="sidebar-link-icon">🌐</span> Trang Chủ</a>
+        <a class="sidebar-link" data-action="logout"><span class="sidebar-link-icon">🚪</span> Đăng Xuất</a>
+      </div>
+    </nav>
+    <div class="sidebar-user">
+      <img id="sidebar-user-avatar" src="" class="sidebar-user-avatar">
+      <div><div class="sidebar-user-name" id="sidebar-user-name">—</div><div class="sidebar-user-role" id="sidebar-user-role">admin</div></div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <div style="font-size:14px;color:var(--text-secondary)">Admin / Người Dùng</div>
+      <div class="topbar-actions">
+        <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Thêm Người Dùng</button>
+      </div>
+    </div>
+    <div class="page-container">
+      <h1 class="page-title font-heading">Quản Lý Người Dùng</h1>
+      <!-- Tabs -->
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <button class="filter-tab active" data-role="">Tất Cả</button>
+        <button class="filter-tab" data-role="admin">🛡️ Admin</button>
+        <button class="filter-tab" data-role="doctor">👨‍⚕️ Bác Sĩ</button>
+        <button class="filter-tab" data-role="customer">👤 Khách Hàng</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead><tr>
+            <th>Người Dùng</th><th>Tên Đăng Nhập</th><th>Vai Trò</th>
+            <th>Email / SĐT</th><th>Chuyên Khoa</th><th>Trạng Thái</th><th>Hành Động</th>
+          </tr></thead>
+          <tbody id="users-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script>
+Auth.requireLogin('admin');
+populateSidebarUser();
+
+let allUsers = [], roleFilter = '', editId = null;
+
+document.querySelectorAll('.filter-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    roleFilter = tab.dataset.role;
+    renderTable();
+  });
+});
+
+const roleLabels = { admin:'🛡️ Admin', doctor:'👨‍⚕️ Bác Sĩ', customer:'👤 Khách Hàng' };
+
+function renderTable() {
+  const filtered = roleFilter ? allUsers.filter(u => u.role === roleFilter) : allUsers;
+  document.getElementById('users-tbody').innerHTML = filtered.map(u => `
+    <tr>
+      <td>
+        <div style="display:flex;align-items:center;gap:10px">
+          <img src="${u.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=7C3AED&color=fff`}"
+               class="table-avatar" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(u.name)}&background=5B21B6&color=fff'">
+          <div>
+            <div style="font-weight:600;font-size:14px">${u.name}</div>
+            <div style="font-size:12px;color:var(--text-muted)">${Fmt.dateShort(u.createdAt)}</div>
+          </div>
+        </div>
+      </td>
+      <td><code style="font-size:12px;color:var(--purple-lighter)">${u.username}</code></td>
+      <td><span class="badge ${u.role==='admin'?'badge-medical':u.role==='doctor'?'badge-confirmed':'badge-spa'}">${roleLabels[u.role]}</span></td>
+      <td><div style="font-size:13px">${u.email||'—'}</div><div style="font-size:12px;color:var(--text-muted)">${u.phone||'—'}</div></td>
+      <td style="font-size:13px;color:var(--text-secondary)">${u.specialty||'—'}</td>
+      <td><span class="badge ${u.is_active?'badge-completed':'badge-cancelled'}">${u.is_active?'Hoạt Động':'Vô Hiệu'}</span></td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost btn-sm" onclick="openEditModal(${JSON.stringify(u).replace(/"/g,'&quot;')})">✏️</button>
+          ${u.is_active ? `<button class="btn btn-danger btn-sm" onclick="deactivateUser('${u.id}','${u.name}')">🚫</button>` : ''}
+        </div>
+      </td>
+    </tr>
+  `).join('') || `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted)">Không có người dùng nào</td></tr>`;
+}
+
+async function loadUsers() {
+  try {
+    allUsers = await API.getAdminUsers();
+    renderTable();
+  } catch(e) { Toast.error(e.message); }
+}
+
+function toggleFields() {
+  const role = document.getElementById('u-role').value;
+  document.getElementById('specialty-field').style.display = role === 'doctor' ? 'block' : 'none';
+}
+
+function openAddModal() {
+  editId = null;
+  document.getElementById('modal-title').textContent = 'Thêm Người Dùng';
+  document.getElementById('pwd-optional').style.display = 'none';
+  document.getElementById('user-id').value = '';
+  document.getElementById('u-name').value = '';
+  document.getElementById('u-username').value = '';
+  document.getElementById('u-password').value = '';
+  document.getElementById('u-email').value = '';
+  document.getElementById('u-phone').value = '';
+  document.getElementById('u-role').value = 'customer';
+  document.getElementById('u-specialty').value = '';
+  toggleFields();
+  document.getElementById('user-modal').classList.add('open');
+}
+
+function openEditModal(u) {
+  editId = u.id;
+  document.getElementById('modal-title').textContent = 'Chỉnh Sửa Người Dùng';
+  document.getElementById('pwd-optional').style.display = 'inline';
+  document.getElementById('u-name').value = u.name;
+  document.getElementById('u-username').value = u.username;
+  document.getElementById('u-password').value = '';
+  document.getElementById('u-email').value = u.email || '';
+  document.getElementById('u-phone').value = u.phone || '';
+  document.getElementById('u-role').value = u.role;
+  document.getElementById('u-specialty').value = u.specialty || '';
+  toggleFields();
+  document.getElementById('user-modal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('user-modal').classList.remove('open'); }
+
+document.getElementById('user-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const body = {
+    name: document.getElementById('u-name').value,
+    username: document.getElementById('u-username').value,
+    role: document.getElementById('u-role').value,
+    email: document.getElementById('u-email').value || null,
+    phone: document.getElementById('u-phone').value || null,
+    specialty: document.getElementById('u-specialty').value || null,
+  };
+  const pwd = document.getElementById('u-password').value;
+  if (pwd) body.password = pwd;
+  else if (!editId) { Toast.warning('Vui lòng nhập mật khẩu'); return; }
+
+  try {
+    if (editId) await API.updateAdminUser(editId, body);
+    else { body.password = pwd; await API.createAdminUser(body); }
+    closeModal(); Toast.success(editId ? 'Đã cập nhật' : 'Đã thêm người dùng'); loadUsers();
+  } catch(e) { Toast.error(e.message); }
+});
+
+async function deactivateUser(id, name) {
+  if (!confirm(`Vô hiệu hóa tài khoản "${name}"?`)) return;
+  try {
+    await API.deleteAdminUser(id);
+    Toast.success('Đã vô hiệu hóa'); loadUsers();
+  } catch(e) { Toast.error(e.message); }
+}
+
+loadUsers();
+</script>
+</body>
+</html>

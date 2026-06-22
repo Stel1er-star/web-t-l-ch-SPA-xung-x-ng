@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trang Chủ — SpaProMax</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/components.css">
+</head>
+<body>
+<div id="toast-container"></div>
+<div class="main-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="sidebar-logo-icon">🌿</div><span class="sidebar-logo-text">SpaProMax</span></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Của Tôi</div>
+        <a href="dashboard.html" class="sidebar-link active"><span class="sidebar-link-icon">🏠</span> Tổng Quan</a>
+        <a href="booking.html" class="sidebar-link"><span class="sidebar-link-icon">🗓️</span> Đặt Lịch Mới</a>
+        <a href="my-appointments.html" class="sidebar-link"><span class="sidebar-link-icon">📋</span> Lịch Hẹn Của Tôi</a>
+        <a href="profile.html" class="sidebar-link"><span class="sidebar-link-icon">👤</span> Hồ Sơ</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Khác</div>
+        <a href="../index.html" class="sidebar-link"><span class="sidebar-link-icon">🌐</span> Trang Chủ</a>
+        <a class="sidebar-link" data-action="logout"><span class="sidebar-link-icon">🚪</span> Đăng Xuất</a>
+      </div>
+    </nav>
+    <div class="sidebar-user">
+      <img id="sidebar-user-avatar" src="" class="sidebar-user-avatar">
+      <div><div class="sidebar-user-name" id="sidebar-user-name">—</div><div class="sidebar-user-role" id="sidebar-user-role">Khách hàng</div></div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <div style="font-size:14px;color:var(--text-secondary)">Khách Hàng / Tổng Quan</div>
+      <div class="topbar-actions">
+        <a href="booking.html" class="btn btn-primary btn-sm">+ Đặt Lịch Mới</a>
+      </div>
+    </div>
+
+    <div class="page-container">
+      <h1 class="page-title font-heading" id="greeting">Xin chào! 👋</h1>
+      <p class="page-subtitle">Đây là tổng quan tài khoản của bạn.</p>
+
+      <!-- Quick Stats -->
+      <div class="grid-4" style="margin-bottom:28px">
+        <div class="stat-card blue"><div class="stat-icon blue">📅</div><div><div class="stat-label">Tổng Lịch Hẹn</div><div class="stat-value" id="s-total">—</div></div></div>
+        <div class="stat-card emerald"><div class="stat-icon emerald">✅</div><div><div class="stat-label">Hoàn Thành</div><div class="stat-value" id="s-done">—</div></div></div>
+        <div class="stat-card gold"><div class="stat-icon gold">⏳</div><div><div class="stat-label">Sắp Tới</div><div class="stat-value" id="s-upcoming">—</div></div></div>
+        <div class="stat-card purple"><div class="stat-icon purple">⭐</div><div><div class="stat-label">Đánh Giá</div><div class="stat-value" id="s-reviews">—</div></div></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:24px">
+        <!-- Upcoming Appointments -->
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+            <div class="card-title">Lịch Hẹn Sắp Tới</div>
+            <a href="my-appointments.html" class="btn btn-ghost btn-sm">Xem tất cả →</a>
+          </div>
+          <div id="upcoming-list" style="padding:8px 0"></div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="card" style="text-align:center;padding:28px">
+            <div style="font-size:40px;margin-bottom:12px">🗓️</div>
+            <div style="font-weight:700;font-size:16px;margin-bottom:8px">Đặt Lịch Mới</div>
+            <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px">Chọn dịch vụ và bác sĩ phù hợp</div>
+            <a href="booking.html" class="btn btn-primary btn-full">Đặt Lịch Ngay</a>
+          </div>
+          <div class="card" style="text-align:center;padding:24px">
+            <div style="font-size:32px;margin-bottom:10px">👤</div>
+            <div style="font-weight:700;font-size:15px;margin-bottom:6px">Hồ Sơ Cá Nhân</div>
+            <div style="font-size:13px;color:var(--text-secondary);margin-bottom:14px">Cập nhật thông tin của bạn</div>
+            <a href="profile.html" class="btn btn-outline btn-full">Chỉnh Sửa Hồ Sơ</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script>
+Auth.requireLogin('customer');
+populateSidebarUser();
+const user = Auth.getUser();
+document.getElementById('greeting').textContent = `Xin chào, ${user.name}! 👋`;
+
+async function loadData() {
+  try {
+    const appts = await API.getMyAppts();
+    const total = appts.length;
+    const done = appts.filter(a => a.status === 'completed').length;
+    const upcoming = appts.filter(a => ['pending','confirmed'].includes(a.status)).length;
+    const reviews = appts.filter(a => a.reviewId).length;
+
+    animateCount(document.getElementById('s-total'), total);
+    animateCount(document.getElementById('s-done'), done);
+    animateCount(document.getElementById('s-upcoming'), upcoming);
+    animateCount(document.getElementById('s-reviews'), reviews);
+
+    // Upcoming list
+    const upcomingAppts = appts.filter(a => ['pending','confirmed','in-progress'].includes(a.status)).slice(0,5);
+    const list = document.getElementById('upcoming-list');
+    list.innerHTML = upcomingAppts.length ? upcomingAppts.map(a => `
+      <div style="padding:14px 24px;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;gap:14px">
+        <div style="width:46px;height:46px;background:rgba(124,58,237,0.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">${a.serviceIcon}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;font-size:14px;margin-bottom:2px">${a.serviceName}</div>
+          <div style="font-size:12px;color:var(--text-secondary)">👨‍⚕️ ${a.staffName} • ${Fmt.dateShort(a.date)} ${a.time}</div>
+        </div>
+        <div>${Fmt.statusBadge(a.status)}</div>
+      </div>
+    `).join('') : `<div style="padding:32px;text-align:center;color:var(--text-muted)">Không có lịch hẹn sắp tới</div>`;
+  } catch(e) { Toast.error('Lỗi tải dữ liệu'); }
+}
+loadData();
+</script>
+</body>
+</html>

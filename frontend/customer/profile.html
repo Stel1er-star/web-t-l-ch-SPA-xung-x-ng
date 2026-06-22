@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hồ Sơ — SpaProMax</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/components.css">
+</head>
+<body>
+<div id="toast-container"></div>
+<div class="main-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="sidebar-logo-icon">🌿</div><span class="sidebar-logo-text">SpaProMax</span></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <a href="dashboard.html" class="sidebar-link"><span class="sidebar-link-icon">🏠</span> Tổng Quan</a>
+        <a href="booking.html" class="sidebar-link"><span class="sidebar-link-icon">🗓️</span> Đặt Lịch Mới</a>
+        <a href="my-appointments.html" class="sidebar-link"><span class="sidebar-link-icon">📋</span> Lịch Hẹn Của Tôi</a>
+        <a href="profile.html" class="sidebar-link active"><span class="sidebar-link-icon">👤</span> Hồ Sơ</a>
+      </div>
+      <div class="sidebar-section">
+        <a href="../index.html" class="sidebar-link"><span class="sidebar-link-icon">🌐</span> Trang Chủ</a>
+        <a class="sidebar-link" data-action="logout"><span class="sidebar-link-icon">🚪</span> Đăng Xuất</a>
+      </div>
+    </nav>
+    <div class="sidebar-user">
+      <img id="sidebar-user-avatar" src="" class="sidebar-user-avatar">
+      <div><div class="sidebar-user-name" id="sidebar-user-name">—</div><div class="sidebar-user-role" id="sidebar-user-role">Khách hàng</div></div>
+    </div>
+  </aside>
+  <main class="main-content">
+    <div class="topbar"><div style="font-size:14px;color:var(--text-secondary)">Khách Hàng / Hồ Sơ</div></div>
+    <div class="page-container" style="max-width:720px">
+      <h1 class="page-title font-heading">Hồ Sơ Cá Nhân</h1>
+      <div style="display:grid;grid-template-columns:1fr 2fr;gap:24px">
+        <!-- Avatar Card -->
+        <div class="card" style="text-align:center;padding:32px">
+          <img id="profile-avatar" src="" style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid var(--purple);margin:0 auto 16px;box-shadow:var(--glow-purple-sm)">
+          <div id="profile-name" style="font-weight:700;font-size:18px;margin-bottom:4px">—</div>
+          <div id="profile-role" style="font-size:13px;color:var(--purple-lighter)">—</div>
+          <div style="margin-top:12px;font-size:12px;color:var(--text-muted)" id="profile-since">—</div>
+        </div>
+        <!-- Form -->
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-title" style="margin-bottom:20px">Thông Tin Cá Nhân</div>
+            <form id="profile-form" style="display:flex;flex-direction:column;gap:14px">
+              <div class="form-group"><label class="form-label">Họ và tên</label><input type="text" id="p-name" class="form-input"></div>
+              <div class="grid-2" style="gap:12px">
+                <div class="form-group"><label class="form-label">Email</label><input type="email" id="p-email" class="form-input"></div>
+                <div class="form-group"><label class="form-label">Số điện thoại</label><input type="tel" id="p-phone" class="form-input"></div>
+              </div>
+              <div class="form-group"><label class="form-label">Giới thiệu bản thân</label><textarea class="form-input form-textarea" id="p-bio"></textarea></div>
+              <button type="submit" class="btn btn-primary">💾 Lưu Thay Đổi</button>
+            </form>
+          </div>
+          <div class="card">
+            <div class="card-title" style="margin-bottom:20px">Đổi Mật Khẩu</div>
+            <form id="pwd-form" style="display:flex;flex-direction:column;gap:14px">
+              <div class="form-group"><label class="form-label">Mật khẩu cũ</label><input type="password" id="old-pwd" class="form-input"></div>
+              <div class="form-group"><label class="form-label">Mật khẩu mới</label><input type="password" id="new-pwd" class="form-input"></div>
+              <button type="submit" class="btn btn-outline">🔒 Đổi Mật Khẩu</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script>
+Auth.requireLogin('customer');
+populateSidebarUser();
+async function loadProfile() {
+  try {
+    const user = await API.me();
+    document.getElementById('profile-avatar').src = user.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=7C3AED&color=fff&size=200`;
+    document.getElementById('profile-name').textContent = user.name;
+    document.getElementById('profile-role').textContent = user.role === 'customer' ? 'Khách Hàng' : user.role;
+    document.getElementById('profile-since').textContent = 'Thành viên từ ' + Fmt.dateShort(user.createdAt);
+    document.getElementById('p-name').value = user.name || '';
+    document.getElementById('p-email').value = user.email || '';
+    document.getElementById('p-phone').value = user.phone || '';
+    document.getElementById('p-bio').value = user.bio || '';
+  } catch(e) { Toast.error(e.message); }
+}
+document.getElementById('profile-form').addEventListener('submit', async(e)=>{
+  e.preventDefault();
+  try {
+    await API.updateProfile({ name:document.getElementById('p-name').value, email:document.getElementById('p-email').value, phone:document.getElementById('p-phone').value, bio:document.getElementById('p-bio').value });
+    Toast.success('Đã cập nhật hồ sơ');
+    loadProfile();
+  } catch(e) { Toast.error(e.message); }
+});
+document.getElementById('pwd-form').addEventListener('submit', async(e)=>{
+  e.preventDefault();
+  try {
+    await API.changePassword({ oldPassword:document.getElementById('old-pwd').value, newPassword:document.getElementById('new-pwd').value });
+    Toast.success('Đã đổi mật khẩu');
+    document.getElementById('old-pwd').value=''; document.getElementById('new-pwd').value='';
+  } catch(e) { Toast.error(e.message); }
+});
+loadProfile();
+</script>
+</body>
+</html>

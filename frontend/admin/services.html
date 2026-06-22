@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Dịch Vụ — SpaProMax</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/components.css">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<!-- Service Modal -->
+<div class="modal-overlay" id="svc-modal">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <div class="modal-title" id="svc-modal-title">Thêm Dịch Vụ</div>
+      <button class="modal-close" onclick="closeSvcModal()">✕</button>
+    </div>
+    <form id="svc-form" style="display:flex;flex-direction:column;gap:14px">
+      <input type="hidden" id="svc-id">
+      <div class="grid-2" style="gap:12px">
+        <div class="form-group">
+          <label class="form-label">Tên Dịch Vụ *</label>
+          <input type="text" id="s-name" class="form-input" placeholder="Massage Thư Giãn" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Icon (emoji)</label>
+          <input type="text" id="s-icon" class="form-input" placeholder="💆" maxlength="4">
+        </div>
+      </div>
+      <div class="grid-2" style="gap:12px">
+        <div class="form-group">
+          <label class="form-label">Danh Mục *</label>
+          <select class="form-select" id="s-category" required>
+            <option value="spa">💆 Spa & Làm Đẹp</option>
+            <option value="medical">🏥 Y Tế</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Thời Gian (phút) *</label>
+          <input type="number" id="s-duration" class="form-input" value="60" min="15" step="15" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Giá Dịch Vụ (VNĐ) *</label>
+        <input type="number" id="s-price" class="form-input" placeholder="350000" min="0" step="1000" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mô Tả</label>
+        <textarea class="form-input form-textarea" id="s-desc" placeholder="Mô tả về dịch vụ..." style="min-height:80px"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">URL Hình Ảnh</label>
+        <input type="url" id="s-img" class="form-input" placeholder="https://...">
+      </div>
+      <div class="modal-footer" style="margin-top:4px">
+        <button type="button" class="btn btn-ghost" onclick="closeSvcModal()">Hủy</button>
+        <button type="submit" class="btn btn-primary" id="svc-submit-btn">💾 Lưu</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="main-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="sidebar-logo-icon">🌿</div><span class="sidebar-logo-text">SpaProMax</span></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <a href="dashboard.html" class="sidebar-link"><span class="sidebar-link-icon">📊</span> Dashboard</a>
+        <a href="appointments.html" class="sidebar-link"><span class="sidebar-link-icon">🗓️</span> Lịch Hẹn</a>
+        <a href="users.html" class="sidebar-link"><span class="sidebar-link-icon">👥</span> Người Dùng</a>
+        <a href="services.html" class="sidebar-link active"><span class="sidebar-link-icon">✨</span> Dịch Vụ</a>
+        <a href="shifts.html" class="sidebar-link"><span class="sidebar-link-icon">🕐</span> Ca Làm Việc</a>
+      </div>
+      <div class="sidebar-section">
+        <a href="../index.html" class="sidebar-link"><span class="sidebar-link-icon">🌐</span> Trang Chủ</a>
+        <a class="sidebar-link" data-action="logout"><span class="sidebar-link-icon">🚪</span> Đăng Xuất</a>
+      </div>
+    </nav>
+    <div class="sidebar-user">
+      <img id="sidebar-user-avatar" src="" class="sidebar-user-avatar">
+      <div><div class="sidebar-user-name" id="sidebar-user-name">—</div><div class="sidebar-user-role" id="sidebar-user-role">admin</div></div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <div style="font-size:14px;color:var(--text-secondary)">Admin / Dịch Vụ</div>
+      <div class="topbar-actions">
+        <button class="btn btn-primary btn-sm" onclick="openAdd()">+ Thêm Dịch Vụ</button>
+      </div>
+    </div>
+    <div class="page-container">
+      <h1 class="page-title font-heading">Quản Lý Dịch Vụ</h1>
+
+      <!-- Filter + Search -->
+      <div style="display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap;align-items:center">
+        <div style="display:flex;gap:6px">
+          <button class="filter-tab active" data-cat="">Tất Cả</button>
+          <button class="filter-tab" data-cat="spa">💆 Spa</button>
+          <button class="filter-tab" data-cat="medical">🏥 Y Tế</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;background:var(--glass-bg);border:1px solid var(--border);border-radius:var(--radius-full);padding:8px 14px;flex:1;max-width:280px">
+          <span style="color:var(--text-muted)">🔍</span>
+          <input type="text" id="search-input" class="form-input" style="border:none;background:transparent;padding:0" placeholder="Tìm dịch vụ...">
+        </div>
+      </div>
+
+      <div class="grid-3" id="services-grid" style="gap:20px">
+        <div class="card" style="height:200px"><div class="skeleton" style="height:100%"></div></div>
+        <div class="card" style="height:200px"><div class="skeleton" style="height:100%"></div></div>
+        <div class="card" style="height:200px"><div class="skeleton" style="height:100%"></div></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script>
+Auth.requireLogin('admin');
+populateSidebarUser();
+
+let allSvcs = [], catFilter = '', searchQuery = '';
+
+// Filter tabs
+document.querySelectorAll('.filter-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    catFilter = tab.dataset.cat;
+    renderGrid();
+  });
+});
+
+// Search
+document.getElementById('search-input').addEventListener('input', (e) => {
+  searchQuery = e.target.value.toLowerCase();
+  renderGrid();
+});
+
+function renderGrid() {
+  let filtered = allSvcs;
+  if (catFilter) filtered = filtered.filter(s => s.category === catFilter);
+  if (searchQuery) filtered = filtered.filter(s => s.name.toLowerCase().includes(searchQuery) || (s.description||'').toLowerCase().includes(searchQuery));
+
+  const grid = document.getElementById('services-grid');
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-state-icon">🔍</div><div class="empty-state-title">Không tìm thấy dịch vụ nào</div></div>`;
+    return;
+  }
+  grid.innerHTML = filtered.map(s => `
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="position:relative">
+        <img src="${s.image_url || 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=180&fit=crop'}"
+             style="width:100%;height:160px;object-fit:cover"
+             onerror="this.src='https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=180&fit=crop'">
+        <div style="position:absolute;top:10px;right:10px">${Fmt.categoryBadge(s.category)}</div>
+        <div style="position:absolute;top:10px;left:10px;width:36px;height:36px;background:rgba(0,0,0,0.5);backdrop-filter:blur(10px);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px">${s.icon || '✨'}</div>
+      </div>
+      <div style="padding:16px">
+        <div style="font-weight:700;font-size:15px;margin-bottom:8px">${s.name}</div>
+        <div style="display:flex;gap:12px;font-size:12px;color:var(--text-secondary);margin-bottom:10px">
+          <span>⏱ ${s.duration} phút</span>
+          <span>💰 ${Fmt.currency(s.price)}</span>
+        </div>
+        ${s.description ? `<div style="font-size:12px;color:var(--text-muted);line-height:1.5;margin-bottom:12px">${s.description.slice(0,80)}${s.description.length>80?'...':''}</div>` : ''}
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="openEdit(${JSON.stringify(s).replace(/"/g,'&quot;')})">✏️ Sửa</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteSvc('${s.id}','${s.name}')">🗑️</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function loadServices() {
+  try {
+    allSvcs = await API.getServices();
+    renderGrid();
+  } catch(e) { Toast.error(e.message); }
+}
+
+let editId = null;
+function openAdd() {
+  editId = null;
+  document.getElementById('svc-modal-title').textContent = 'Thêm Dịch Vụ Mới';
+  document.getElementById('svc-id').value = '';
+  document.getElementById('s-name').value = '';
+  document.getElementById('s-icon').value = '';
+  document.getElementById('s-category').value = 'spa';
+  document.getElementById('s-duration').value = 60;
+  document.getElementById('s-price').value = '';
+  document.getElementById('s-desc').value = '';
+  document.getElementById('s-img').value = '';
+  document.getElementById('svc-modal').classList.add('open');
+}
+function openEdit(s) {
+  editId = s.id;
+  document.getElementById('svc-modal-title').textContent = 'Chỉnh Sửa Dịch Vụ';
+  document.getElementById('s-name').value = s.name;
+  document.getElementById('s-icon').value = s.icon || '';
+  document.getElementById('s-category').value = s.category;
+  document.getElementById('s-duration').value = s.duration;
+  document.getElementById('s-price').value = s.price;
+  document.getElementById('s-desc').value = s.description || '';
+  document.getElementById('s-img').value = s.image_url || '';
+  document.getElementById('svc-modal').classList.add('open');
+}
+function closeSvcModal() { document.getElementById('svc-modal').classList.remove('open'); }
+
+document.getElementById('svc-form').addEventListener('submit', async(e) => {
+  e.preventDefault();
+  const body = {
+    name: document.getElementById('s-name').value,
+    icon: document.getElementById('s-icon').value || '✨',
+    category: document.getElementById('s-category').value,
+    duration: parseInt(document.getElementById('s-duration').value),
+    price: parseInt(document.getElementById('s-price').value),
+    description: document.getElementById('s-desc').value || null,
+    image_url: document.getElementById('s-img').value || null,
+  };
+  try {
+    if (editId) await API.updateService(editId, body);
+    else await API.createService(body);
+    closeSvcModal();
+    Toast.success(editId ? 'Đã cập nhật dịch vụ' : 'Đã thêm dịch vụ mới');
+    loadServices();
+  } catch(e) { Toast.error(e.message); }
+});
+
+async function deleteSvc(id, name) {
+  if (!confirm(`Xóa dịch vụ "${name}"?`)) return;
+  try {
+    await API.deleteService(id);
+    Toast.success('Đã xóa dịch vụ');
+    loadServices();
+  } catch(e) { Toast.error(e.message); }
+}
+
+loadServices();
+</script>
+</body>
+</html>
