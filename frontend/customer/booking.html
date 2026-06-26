@@ -22,6 +22,10 @@
     .cal-day.selected { background: var(--purple); color: #fff; box-shadow: var(--glow-purple-sm); }
     .cal-day.disabled { color: var(--text-disabled); cursor: not-allowed; }
     .cal-day.other { color: rgba(255,255,255,0.15); cursor: default; }
+    .cal-day.has-shift { background: rgba(16,185,129,0.12); color: var(--emerald-light); border: 1px solid rgba(16,185,129,0.3); }
+    .cal-day.has-shift:hover { background: rgba(16,185,129,0.25); border-color: var(--emerald); }
+    .cal-day.has-shift.selected { background: var(--purple); color: #fff; border-color: var(--purple); }
+    .cal-day.has-shift.today { border-color: var(--emerald); }
     .cal-header-day { font-size:11px;font-weight:700;color:var(--text-muted);text-align:center;padding:4px 0; }
   </style>
 </head>
@@ -132,6 +136,21 @@
               <div class="cal-header-day">T7</div>
             </div>
             <div class="cal-grid" id="cal-grid" style="margin-top:4px"><!-- Days --></div>
+            <!-- Legend -->
+            <div style="display:flex;gap:14px;margin-top:12px;font-size:11px;color:var(--text-muted);flex-wrap:wrap">
+              <div style="display:flex;align-items:center;gap:5px">
+                <div style="width:10px;height:10px;border-radius:3px;background:rgba(16,185,129,0.25);border:1px solid rgba(16,185,129,0.4)"></div>
+                Có ca làm việc
+              </div>
+              <div style="display:flex;align-items:center;gap:5px">
+                <div style="width:10px;height:10px;border-radius:3px;background:rgba(124,58,237,0.8)"></div>
+                Đã chọn
+              </div>
+              <div style="display:flex;align-items:center;gap:5px">
+                <div style="width:10px;height:10px;border-radius:3px;background:rgba(255,255,255,0.08);border:1px solid rgba(124,58,237,0.4)"></div>
+                Hôm nay
+              </div>
+            </div>
           </div>
 
           <!-- Time Slots -->
@@ -174,7 +193,7 @@
           <div style="display:flex;gap:10px;align-items:flex-start">
             <span style="font-size:20px">💳</span>
             <div>
-              <div style="font-weight:600;color:var(--gold);margin-bottom:4px">Chính Sách Đặt Cọc</div>
+              <div style="font-weight:600;color:var(--gold);margin-bottom:4px">Chính Sách Đặt Cọc <span id="deposit-badge-inline" style="font-size:11px;background:rgba(245,158,11,0.2);border-radius:10px;padding:2px 8px;margin-left:6px"></span></div>
               <div style="font-size:13px;color:var(--text-secondary);line-height:1.6">
                 • Đặt cọc <b style="color:var(--text-primary)">30%</b> giá trị dịch vụ để xác nhận lịch hẹn.<br>
                 • Hủy trước <b style="color:var(--emerald)">24 giờ</b>: Hoàn tiền 100% tiền đặt cọc.<br>
@@ -187,17 +206,22 @@
         <div style="display:flex;justify-content:space-between;align-items:center">
           <button class="btn btn-ghost" onclick="goStep(3)">← Quay Lại</button>
           <div style="display:flex;gap:12px">
-            <button class="btn btn-outline" onclick="submitBooking(false)" id="btn-no-deposit">Đặt Lịch (Không Cọc)</button>
-            <button class="btn btn-primary" onclick="submitBooking(true)" id="btn-deposit">💳 Đặt & Thanh Toán Cọc</button>
+            <button class="btn btn-ghost" onclick="submitBooking(false)" id="btn-no-deposit" style="border-color:rgba(255,255,255,0.15)">
+              📋 Đặt Không Cọc
+            </button>
+            <button class="btn btn-primary" onclick="startDepositFlow()" id="btn-deposit" style="background:linear-gradient(135deg,#f59e0b,#d97706);box-shadow:0 0 20px rgba(245,158,11,0.35)">
+              💳 Đặt & Cọc <span id="deposit-amount-btn"></span>
+            </button>
           </div>
         </div>
       </div>
 
       <!-- ─── Step 5: Success ─── -->
       <div class="step-panel" id="panel-5" style="text-align:center;padding:48px 0">
-        <div style="font-size:64px;margin-bottom:20px;animation:bounce 0.6s">🎉</div>
-        <h2 class="font-heading" style="font-size:28px;margin-bottom:12px">Đặt Lịch Thành Công!</h2>
-        <p style="color:var(--text-secondary);margin-bottom:32px;max-width:400px;margin-left:auto;margin-right:auto">
+        <div id="success-icon" style="font-size:64px;margin-bottom:20px;animation:bounce 0.6s">🎉</div>
+        <h2 class="font-heading" style="font-size:28px;margin-bottom:12px" id="success-title">Đặt Lịch Thành Công!</h2>
+        <div id="success-deposit-badge" style="display:none;margin:0 auto 20px;width:fit-content"></div>
+        <p style="color:var(--text-secondary);margin-bottom:32px;max-width:420px;margin-left:auto;margin-right:auto" id="success-msg">
           Lịch hẹn của bạn đã được ghi nhận. Chúng tôi sẽ xác nhận trong thời gian sớm nhất.
         </p>
         <div style="display:flex;gap:12px;justify-content:center">
@@ -205,6 +229,38 @@
           <a href="booking.html" class="btn btn-ghost">+ Đặt Lịch Mới</a>
         </div>
         <style>@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-15px)}}</style>
+      </div>
+
+      <!-- ─── Deposit Payment Modal ─── -->
+      <div class="modal-overlay" id="deposit-modal">
+        <div class="modal" style="max-width:440px;text-align:center">
+          <div style="font-size:48px;margin-bottom:12px">💳</div>
+          <div class="modal-title" style="font-size:20px;margin-bottom:6px">Thanh Toán Đặt Cọc</div>
+          <p style="color:var(--text-secondary);font-size:13px;margin-bottom:20px">Quét mã hoặc chuyển khoản để hoàn tất đặt cọc</p>
+          <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:16px;margin-bottom:20px">
+            <div style="font-size:13px;color:var(--text-muted);margin-bottom:4px">Số tiền đặt cọc (30%)</div>
+            <div style="font-size:32px;font-weight:700;color:var(--gold)" id="deposit-modal-amount">—</div>
+          </div>
+          <!-- Fake QR / bank info -->
+          <div style="background:var(--glass-bg);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px;font-size:13px;text-align:left">
+            <div style="font-weight:600;margin-bottom:8px">🏦 Thông tin chuyển khoản</div>
+            <div style="color:var(--text-secondary);line-height:1.9">
+              Ngân hàng: <b style="color:var(--text-primary)">Vietcombank</b><br>
+              Số TK: <b style="color:var(--text-primary)">1234 5678 9012</b><br>
+              Chủ TK: <b style="color:var(--text-primary)">SPAPROMAX CO.</b><br>
+              Nội dung: <b style="color:var(--purple-lighter)" id="deposit-transfer-code">SPM-...</b>
+            </div>
+          </div>
+          <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:12px;margin-bottom:20px;font-size:13px;color:var(--emerald-light)">
+            ℹ️ Sau khi chuyển khoản, nhấn <b>"Xác Nhận Đã Cọc"</b> để hoàn tất đặt lịch.
+          </div>
+          <div style="display:flex;gap:10px">
+            <button class="btn btn-ghost btn-full" onclick="closeDepositModal()">Hủy</button>
+            <button class="btn btn-full" onclick="confirmDeposit()" style="background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-weight:700">
+              ✅ Xác Nhận Đã Cọc
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </main>
@@ -356,11 +412,22 @@ function selectDoctor(idx) {
   document.getElementById('step2-next').disabled = false;
 }
 
-// ─── Step 3: Calendar & Time Slots ───────────────────────
+// ─── Step 3: Calendar & Time Slots ─────────────────────
 let calYear, calMonth;
-function initCalendar() {
+let doctorWorkDays = new Set(); // e.g. Set(['Mon','Tue','Thu'])
+
+// Day index (JS) => abbrev used by backend
+const DAY_ABBREV = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+async function initCalendar() {
   const now = new Date();
   calYear = now.getFullYear(); calMonth = now.getMonth();
+  // Fetch shifts for selected doctor
+  doctorWorkDays = new Set();
+  try {
+    const shifts = await API.getStaffShifts(state.doctor.id);
+    shifts.forEach(s => doctorWorkDays.add(s.day));
+  } catch {}
   renderCalendar();
 }
 
@@ -379,13 +446,23 @@ function renderCalendar() {
   for (let i = 0; i < firstDay; i++) html += `<div class="cal-day other"></div>`;
   for (let d = 1; d <= daysInMonth; d++) {
     const thisDate = new Date(calYear, calMonth, d);
-    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const isToday = thisDate.getTime() === today.getTime();
-    const isPast  = thisDate < today;
-    const isFuture= thisDate > maxDate;
-    const isSel   = state.date === dateStr;
-    const cls = isPast || isFuture ? 'disabled' : isToday ? 'today' : isSel ? 'selected' : '';
-    html += `<div class="cal-day ${cls}" ${!isPast && !isFuture ? `onclick="selectDate('${dateStr}')"` : ''}>${d}</div>`;
+    const dateStr  = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday  = thisDate.getTime() === today.getTime();
+    const isPast   = thisDate < today;
+    const isFuture = thisDate > maxDate;
+    const isSel    = state.date === dateStr;
+    // Check if doctor works on this weekday
+    const dayAbbr  = DAY_ABBREV[thisDate.getDay()];
+    const hasShift = doctorWorkDays.has(dayAbbr);
+
+    let cls = '';
+    if (isPast || isFuture) cls = 'disabled';
+    else if (isSel)         cls = `${hasShift ? 'has-shift ' : ''}selected`;
+    else if (isToday)       cls = `${hasShift ? 'has-shift ' : ''}today`;
+    else if (hasShift)      cls = 'has-shift';
+
+    const clickable = !isPast && !isFuture;
+    html += `<div class="cal-day ${cls}" ${clickable ? `onclick="selectDate('${dateStr}')"` : ''}>${d}</div>`;
   }
   grid.innerHTML = html;
 }
@@ -409,7 +486,14 @@ async function selectDate(dateStr) {
   try {
     const { slots } = await API.getSlots({ staffId: state.doctor.id, date: dateStr, serviceId: state.service.id });
     if (!slots.length) {
-      slotsGrid.innerHTML = `<div style="color:var(--text-muted);font-size:13px;grid-column:1/-1">Bác sĩ không làm việc vào ngày này</div>`;
+      // Đưa ra gợi ý ngày làm việc
+      const dayNames = { Sun:'Chủ Nhật', Mon:'Thứ Hai', Tue:'Thứ Ba', Wed:'Thứ Tư', Thu:'Thứ Năm', Fri:'Thứ Sáu', Sat:'Thứ Bảy' };
+      const workDayStr = [...doctorWorkDays].map(d => dayNames[d] || d).join(', ');
+      slotsGrid.innerHTML = `
+        <div style="color:var(--text-muted);font-size:13px;grid-column:1/-1;text-align:center;padding:8px 0">
+          ❌ Bác sĩ không làm việc vào ngày này<br>
+          ${workDayStr ? `<span style="color:var(--emerald-light);font-size:12px;margin-top:6px;display:block">✅ Lịch làm việc: <b>${workDayStr}</b></span>` : ''}
+        </div>`;
       return;
     }
     slotsGrid.innerHTML = slots.map(s => `
@@ -428,6 +512,7 @@ function selectTime(time) {
 // ─── Step 4: Confirm ──────────────────────────────────────
 function buildConfirmSummary() {
   const s = state;
+  const depositAmt = Math.round(s.service.price * 0.3);
   const rows = [
     ['✨ Dịch Vụ', s.service.name],
     ['👨‍⚕️ Bác Sĩ / KTV', s.doctor.name + (s.doctor.specialty ? ` — ${s.doctor.specialty}` : '')],
@@ -435,7 +520,7 @@ function buildConfirmSummary() {
     ['🕐 Giờ', s.time],
     ['⏱ Thời Gian', `${s.service.duration} phút`],
     ['💰 Giá Dịch Vụ', Fmt.currency(s.service.price)],
-    ['💳 Tiền Đặt Cọc (30%)', Fmt.currency(Math.round(s.service.price * 0.3))],
+    ['💳 Tiền Đặt Cọc (30%)', Fmt.currency(depositAmt)],
   ];
   document.getElementById('confirm-summary').innerHTML = rows.map(([k,v]) => `
     <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
@@ -443,6 +528,28 @@ function buildConfirmSummary() {
       <span style="font-weight:600;font-size:14px">${v}</span>
     </div>
   `).join('');
+  // Update deposit button amount
+  const amtEl = document.getElementById('deposit-amount-btn');
+  if (amtEl) amtEl.textContent = `— ${Fmt.currency(depositAmt)}`;
+}
+
+// ─── Deposit Flow ─────────────────────────────────────────
+function startDepositFlow() {
+  const amount = Math.round(state.service.price * 0.3);
+  document.getElementById('deposit-modal-amount').textContent = Fmt.currency(amount);
+  document.getElementById('deposit-amount-btn').textContent = Fmt.currency(amount);
+  const code = `SPM-${Date.now().toString().slice(-6)}`;
+  document.getElementById('deposit-transfer-code').textContent = code;
+  document.getElementById('deposit-modal').classList.add('open');
+}
+
+function closeDepositModal() {
+  document.getElementById('deposit-modal').classList.remove('open');
+}
+
+async function confirmDeposit() {
+  document.getElementById('deposit-modal').classList.remove('open');
+  await submitBooking(true);
 }
 
 // ─── Submit Booking ───────────────────────────────────────
@@ -459,10 +566,24 @@ async function submitBooking(withDeposit) {
       note:       document.getElementById('booking-note').value.trim(),
       depositPaid: withDeposit ? 1 : 0,
     });
-    // Show success
+    // Show success with deposit status
     document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('panel-5').classList.add('active');
-    Toast.success('Đặt lịch thành công! 🎉');
+    if (withDeposit) {
+      const amount = Math.round(state.service.price * 0.3);
+      document.getElementById('success-icon').textContent = '💳';
+      document.getElementById('success-title').textContent = 'Đặt Lịch & Cọc Thành Công!';
+      document.getElementById('success-msg').textContent = `Bạn đã đặt cọc ${Fmt.currency(amount)}. Lịch hẹn sẽ được ưu tiên xác nhận sớm nhất!`;
+      const badge = document.getElementById('success-deposit-badge');
+      badge.style.display = 'block';
+      badge.innerHTML = `<span style="background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.4);border-radius:20px;padding:6px 16px;font-size:13px;color:var(--gold);font-weight:600">💰 Đã cọc ${Fmt.currency(amount)}</span>`;
+    } else {
+      document.getElementById('success-icon').textContent = '🎉';
+      document.getElementById('success-title').textContent = 'Đặt Lịch Thành Công!';
+      document.getElementById('success-msg').textContent = 'Lịch hẹn của bạn đã được ghi nhận. Chúng tôi sẽ xác nhận trong thời gian sớm nhất.';
+      document.getElementById('success-deposit-badge').style.display = 'none';
+    }
+    Toast.success(withDeposit ? 'Đặt lịch & cọc thành công! 💳' : 'Đặt lịch thành công! 🎉');
   } catch (err) {
     Toast.error(err.message || 'Không thể đặt lịch');
     btns.forEach(b => b.disabled = false);

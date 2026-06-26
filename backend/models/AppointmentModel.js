@@ -52,9 +52,10 @@ class AppointmentModel {
 
   static async findAll(filters = {}) {
     let sql = `SELECT a.*,
-              c.name as customerName,
+              c.name as customerName, c.phone as customerPhone,
               s.name as staffName, s.specialty as staffSpecialty,
-              sv.name as serviceName, sv.category as serviceCategory, sv.icon as serviceIcon
+              sv.name as serviceName, sv.category as serviceCategory,
+              sv.duration as serviceDuration, sv.icon as serviceIcon
        FROM Appointments a
        JOIN Users c ON c.id = a.customerId
        JOIN Users s ON s.id = a.staffId

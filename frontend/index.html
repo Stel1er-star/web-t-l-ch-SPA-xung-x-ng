@@ -450,13 +450,16 @@ loadServices();
 loadTeam();
 loadReviews();
 
-// If logged in, redirect to dashboard
+// If logged in, show single "Vào Trang Của Tôi" button
 if (Auth.isLoggedIn()) {
-  document.querySelectorAll('.navbar-actions a').forEach(a => {
-    a.textContent = 'Vào Trang Của Tôi';
-    a.href = '#';
-    a.addEventListener('click', () => Auth.redirectToDashboard());
-  });
+  const actionsEl = document.querySelector('.navbar-actions');
+  if (actionsEl) {
+    actionsEl.innerHTML = `<a href="#" class="btn btn-primary btn-sm" id="go-dashboard-btn">Vào Trang Của Tôi</a>`;
+    document.getElementById('go-dashboard-btn').addEventListener('click', (e) => {
+      e.preventDefault();
+      Auth.redirectToDashboard();
+    });
+  }
 }
 </script>
 </body>

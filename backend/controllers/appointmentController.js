@@ -106,10 +106,21 @@ exports.create = async (req, res) => {
     // Create notification for doctor
     await db.query(
       `INSERT INTO Notifications (id, userId, title, message, type, link) VALUES (?,?,?,?,?,?)`,
-      [`n${Date.now()}`, staffId, 'Lịch hẹn mới',
+      [`n${Date.now()}_d`, staffId, 'Lịch hẹn mới',
        `Khách hàng mới đặt lịch ${service.name} vào ${time} ngày ${date}`,
        'appointment', '/doctor/appointments.html']
     );
+
+    // Create notification for all admins
+    const [admins] = await db.query(`SELECT id FROM Users WHERE role = 'admin' AND is_active = 1`);
+    for (const admin of admins) {
+      await db.query(
+        `INSERT INTO Notifications (id, userId, title, message, type, link) VALUES (?,?,?,?,?,?)`,
+        [`n${Date.now()}_a${admin.id}`, admin.id, 'Lịch hẹn mới',
+         `Khách ${req.user.name || 'Hàng'} vừa đặt lịch ${service.name} với BS ${appt.staffName || ''} vào ${time} ngày ${date}`,
+         'appointment', '/admin/appointments.html']
+      );
+    }
 
     res.status(201).json(appt);
   } catch (err) {
