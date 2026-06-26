@@ -60,6 +60,11 @@ const API = {
   me:             ()       => API.get('/auth/me'),
   updateProfile:  (body)   => API.put('/auth/profile', body),
   changePassword: (body)   => API.put('/auth/change-password', body),
+  uploadAvatar:   (file)   => {
+    const formData = new FormData();
+    formData.append('avatar', file);
+    return request('POST', '/auth/avatar', formData, true);
+  },
 
   // Appointments
   getAppointments:  (p)    => API.get('/appointments', p),
@@ -101,10 +106,13 @@ const API = {
 
   // Admin
   getAdminDashboard: ()    => API.get('/admin/dashboard'),
+  getAdminReports:   (p)   => API.get('/admin/reports', p),
   getAdminUsers:     (p)   => API.get('/admin/users', p),
   createAdminUser:   (b)   => API.post('/admin/users', b),
   updateAdminUser:   (id,b)=> API.put(`/admin/users/${id}`, b),
   deleteAdminUser:   (id)  => API.delete(`/admin/users/${id}`),
+  getDoctorServices: (id)  => API.get(`/admin/users/${id}/services`),
+  updateDoctorServices:(id,serviceIds) => API.patch(`/admin/users/${id}/services`, { serviceIds }),
 };
 
 window.API = API;

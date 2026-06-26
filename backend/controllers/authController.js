@@ -3,7 +3,7 @@ const UserModel = require('../models/UserModel');
 
 const generateToken = (user) => jwt.sign(
   { id: user.id, username: user.username, role: user.role, name: user.name },
-  process.env.JWT_SECRET,
+  process.env.JWT_SECRET || 'fallback-secret-key',
   { expiresIn: process.env.JWT_EXPIRES || '7d' }
 );
 
@@ -65,11 +65,28 @@ exports.me = async (req, res) => {
 
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, email, phone, bio } = req.body;
+    const { name, email, phone, bio, specialty } = req.body;
     if (email && await UserModel.existsEmail(email, req.user.id))
       return res.status(409).json({ error: 'Email đã được sử dụng' });
-    const user = await UserModel.update(req.user.id, { name, email, phone, bio });
+    
+    const updateData = { name, email, phone, bio };
+    if (req.user.role === 'doctor' && specialty !== undefined) {
+      updateData.specialty = specialty;
+    }
+      
+    const user = await UserModel.update(req.user.id, updateData);
     res.json({ user, message: 'Cập nhật thành công' });
+  } catch (err) {
+    res.status(500).json({ error: 'Lỗi server' });
+  }
+};
+
+exports.uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'Không có file ảnh' });
+    const imageUrl = `/uploads/avatars/${req.file.filename}`;
+    const user = await UserModel.update(req.user.id, { image_url: imageUrl });
+    res.json({ user, message: 'Đã tải lên ảnh đại diện' });
   } catch (err) {
     res.status(500).json({ error: 'Lỗi server' });
   }

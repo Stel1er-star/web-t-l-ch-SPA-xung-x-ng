@@ -30,10 +30,18 @@ const Auth = {
   },
 
   // Call this at top of protected pages to gate access
-  requireLogin(requiredRole = null) {
+  // requiredRole: string | string[] | null
+  // adminBypass: if true (default), admin can access any page
+  requireLogin(requiredRole = null, adminBypass = true) {
     if (!this.isLoggedIn()) { window.location.href = '/login.html'; return false; }
-    if (requiredRole && this.getUser()?.role !== requiredRole) {
-      this.redirectToDashboard(); return false;
+    const role = this.getUser()?.role;
+    // Admin bypass: admin có thể xem tất cả trang (trừ khi tắt)
+    if (adminBypass && role === 'admin') return true;
+    if (requiredRole) {
+      const allowed = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+      if (!allowed.includes(role)) {
+        this.redirectToDashboard(); return false;
+      }
     }
     return true;
   }
@@ -176,19 +184,84 @@ function populateSidebarUser() {
   if (nameEl) nameEl.textContent = user.name;
   if (roleEl) roleEl.textContent = user.role === 'doctor' ? 'Bác sĩ / KTV' : user.role === 'admin' ? 'Quản trị viên' : 'Khách hàng';
   if (avatarEl) { avatarEl.src = user.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=7C3AED&color=fff`; }
+
+  // Nếu admin đang xem trang không phải của admin, hiện banner cảnh báo
+  if (user.role === 'admin') {
+    const path = window.location.pathname;
+    if (path.includes('/doctor/') || path.includes('/customer/')) {
+      const roleViewing = path.includes('/doctor/') ? 'Bác Sĩ/KTV' : 'Khách Hàng';
+      const banner = document.createElement('div');
+      banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(90deg,#7C3AED,#06B6D4);color:#fff;text-align:center;font-size:13px;font-weight:600;padding:6px 16px;display:flex;align-items:center;justify-content:center;gap:12px';
+      banner.innerHTML = `🔧 Admin đang xem trang ${roleViewing} <a href="/admin/dashboard.html" style="color:#fff;text-decoration:underline;font-size:12px">← Quay về Admin</a>`;
+      document.body.prepend(banner);
+      // Đẩy content xuống
+      document.body.style.paddingTop = '32px';
+    }
+  }
 }
 
-// ─── Notification Badge ───────────────────────────────────
-async function loadNotifCount() {
-  try {
-    const { count } = await API.getUnreadCount();
-    const badge = document.getElementById('notif-badge');
-    if (badge) {
-      badge.textContent = count;
-      badge.style.display = count > 0 ? 'block' : 'none';
+// ─── Notification Badge & Real-time Polling ────────────────
+class NotificationService {
+  constructor() {
+    this.unreadCount = 0;
+    this.intervalId = null;
+    this.isInitialized = false;
+  }
+
+  async init() {
+    if (this.isInitialized) return;
+    if (!Auth.getToken()) return;
+
+    try {
+      const res = await API.getUnreadCount();
+      this.unreadCount = res.count;
+      this.updateBadge(this.unreadCount);
+
+      // Bắt đầu polling mỗi 15s
+      this.intervalId = setInterval(() => this.poll(), 15000);
+      this.isInitialized = true;
+    } catch (e) {
+      console.warn('Cannot init notifications:', e);
     }
-  } catch {}
+  }
+
+  async poll() {
+    try {
+      const res = await API.getUnreadCount();
+      if (res.count > this.unreadCount) {
+        // Có thông báo mới! Lấy danh sách để hiện Toast
+        const notifs = await API.getNotifications();
+        // Lọc những thông báo chưa đọc và lấy số lượng mới tăng thêm
+        const newNotifs = notifs.filter(n => n.isRead === 0).slice(0, res.count - this.unreadCount);
+        
+        for (const n of newNotifs) {
+          Toast.success(`🔔 ${n.title}: ${n.message}`);
+        }
+      }
+      this.unreadCount = res.count;
+      this.updateBadge(this.unreadCount);
+    } catch (e) {
+      // Ignore poll errors
+    }
+  }
+
+  updateBadge(count) {
+    // Có thể có nhiều thẻ badge (topbar, sidebar...)
+    const badges = document.querySelectorAll('.notification-badge, #notif-badge');
+    badges.forEach(b => {
+      b.textContent = count > 99 ? '99+' : count;
+      b.style.display = count > 0 ? 'inline-flex' : 'none';
+      if(b.id === 'notif-badge') b.style.display = count > 0 ? 'block' : 'none';
+    });
+  }
+
+  stop() {
+    if (this.intervalId) clearInterval(this.intervalId);
+    this.isInitialized = false;
+  }
 }
+
+window.NotifService = new NotificationService();
 
 // ─── Global Init ─────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
@@ -197,6 +270,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initSidebarActive();
   populateSidebarUser();
   initRevealAnimations();
+  
+  // Init Real-time Notifications
+  setTimeout(() => window.NotifService.init(), 1000);
 
   // Logout button
   document.querySelectorAll('[data-action="logout"]').forEach(btn => {
@@ -216,4 +292,3 @@ window.Toast = Toast;
 window.Loader = Loader;
 window.Fmt = Fmt;
 window.animateCount = animateCount;
-window.loadNotifCount = loadNotifCount;

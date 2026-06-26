@@ -1,0 +1,196 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Lý Đánh Giá — SpaProMax Admin</title>
+  <link href="https://fonts.googleapis.com/css2family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    .review-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      transition: all 0.2s ease;
+    }
+    .review-card:hover {
+      border-color: var(--purple-light);
+      transform: translateY(-2px);
+    }
+    .star-rating {
+      color: var(--gold);
+      font-size: 16px;
+      letter-spacing: 2px;
+    }
+  </style>
+</head>
+<body>
+<div id="toast-container"></div>
+<div class="main-layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="sidebar-logo-icon">🌿</div><span class="sidebar-logo-text">SpaProMax Admin</span></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <a href="dashboard.html" class="sidebar-link"><span class="sidebar-link-icon">📊</span> Tổng Quan</a>
+        <a href="users.html" class="sidebar-link"><span class="sidebar-link-icon">👥</span> Quản Lý User</a>
+        <a href="services.html" class="sidebar-link"><span class="sidebar-link-icon">✨</span> Dịch Vụ</a>
+        <a href="appointments.html" class="sidebar-link"><span class="sidebar-link-icon">🗓?</span> Lịch Hẹn</a>
+        <a href="reviews.html" class="sidebar-link active"><span class="sidebar-link-icon">?</span> Đánh Giá</a>
+        <a href="reports.html" class="sidebar-link"><span class="sidebar-link-icon">📈</span> Báo Cáo</a>
+      </div>
+      <div class="sidebar-section">
+        <a href="../index.html" class="sidebar-link"><span class="sidebar-link-icon">?</span> Trang Chủ</a>
+        <a class="sidebar-link" data-action="logout"><span class="sidebar-link-icon">🚪</span> ?ăng Xuất</a>
+      </div>
+    </nav>
+    <div class="sidebar-user">
+      <img id="sidebar-user-avatar" src="" class="sidebar-user-avatar">
+      <div><div class="sidebar-user-name" id="sidebar-user-name">—</div><div class="sidebar-user-role" id="sidebar-user-role">Admin</div></div>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="topbar">
+      <div style="font-size:14px;color:var(--text-secondary)">Admin / Quản Lý Đánh Giá</div>
+      <div class="topbar-actions">
+        <div style="display:flex;align-items:center;gap:6px;background:var(--glass-bg);border:1px solid var(--border);border-radius:var(--radius-full);padding:6px 14px">
+          <span style="color:var(--text-muted);font-size:13px">?</span>
+          <input type="text" id="search-input" placeholder="Tìm tên khách..." style="background:transparent;border:none;font-size:13px;color:var(--text-primary);width:160px">
+        </div>
+        <select id="filter-rating" class="form-select" style="width:auto;padding:6px 12px;font-size:13px;height:34px;border-radius:var(--radius-full)">
+          <option value="">? Tất cả số sao</option>
+          <option value="5">5 Sao</option>
+          <option value="4">4 Sao</option>
+          <option value="3">3 Sao</option>
+          <option value="2">2 Sao</option>
+          <option value="1">1 Sao</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="loadReviews()" style="height:34px">🔄 Làm Mới</button>
+      </div>
+    </div>
+
+    <div class="page-container" style="max-width:900px">
+      <h1 class="page-title font-heading">Phản Hồi Từ Khách Hàng</h1>
+      <div id="reviews-list">
+        <div style="text-align:center;padding:48px;color:var(--text-muted)">Đang tải...</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Reply Modal -->
+<div class="modal-overlay" id="reply-modal">
+  <div class="modal-content" style="max-width:500px">
+    <div class="modal-header">
+      <div class="modal-title font-heading">Trả LĐ Đánh Giá</div>
+      <button class="modal-close" onclick="document.getElementById('reply-modal').classList.remove('open')">×</button>
+    </div>
+    <div style="margin-bottom:16px;font-size:13px;color:var(--text-secondary)" id="reply-target-info"></div>
+    <div class="form-group">
+      <label class="form-label">Nội dung phản hồi từ Admin/Bác sĩ</label>
+      <textarea id="reply-text" class="form-input form-textarea" placeholder="Nhập câu trả lĐ của bạn..." style="height:100px"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('reply-modal').classList.remove('open')">Hủy</button>
+      <button class="btn btn-primary" id="submit-reply-btn">Gửi Trả LĐ</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script>
+Auth.requireLogin('admin');
+populateSidebarUser();
+
+let allReviews = [];
+let replyTargetId = null;
+
+document.getElementById('filter-rating').addEventListener('change', renderReviews);
+document.getElementById('search-input').addEventListener('input', renderReviews);
+
+function renderReviews() {
+  const ratingFilter = document.getElementById('filter-rating').value;
+  const searchStr = document.getElementById('search-input').value.toLowerCase();
+  
+  let filtered = allReviews;
+  if (ratingFilter) filtered = filtered.filter(r => r.rating == ratingFilter);
+  if (searchStr) filtered = filtered.filter(r => (r.customerName||'').toLowerCase().includes(searchStr) || (r.comment||'').toLowerCase().includes(searchStr));
+
+  const list = document.getElementById('reviews-list');
+  if (!filtered.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💬</div><div class="empty-state-title">Chưa có đánh giá nào</div><div class="empty-state-desc">Không tìm thấy đánh giá phù hợp.</div></div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(r => `
+    <div class="review-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+        <div style="display:flex;gap:12px;align-items:center">
+          <img src="https://ui-avatars.com/api/Đame=${encodeURIComponent(r.customerName)}&background=333&color=fff" style="width:40px;height:40px;border-radius:50%">
+          <div>
+            <div style="font-weight:600;font-size:14px">${r.customerName}</div>
+            <div style="font-size:11px;color:var(--text-muted)">📅 ${Fmt.dateShort(r.createdAt)} • 💼 Bác sĩ: ${r.staffName||'—'}</div>
+          </div>
+        </div>
+        <div class="star-rating">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div>
+      </div>
+      
+      <div style="margin-top:12px;font-size:14px;color:var(--text-primary);line-height:1.5">
+        ${r.comment || '<span style="color:var(--text-muted);font-style:italic">Không có nội dung nhận xét.</span>'}
+      </div>
+
+      ${r.tags ? `<div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+        ${r.tags.split(',').map(tag => `<span style="font-size:11px;background:rgba(255,255,255,0.05);padding:2px 8px;border-radius:12px;color:var(--purple-lighter)">#${tag.trim()}</span>`).join('')}
+      </div>` : ''}
+
+      ${r.adminReply ? `
+        <div style="margin-top:12px;padding:12px;background:rgba(124,58,237,0.05);border-left:3px solid var(--purple);border-radius:0 8px 8px 0;font-size:13px">
+          <div style="font-weight:600;color:var(--purple-light);margin-bottom:4px">Phản hồi từ SpaProMax:</div>
+          <div style="color:var(--text-secondary)">${r.adminReply}</div>
+        </div>
+      ` : `
+        <div style="margin-top:12px">
+          <button class="btn btn-outline btn-sm" onclick="openReplyModal('${r.id}', '${r.customerName}')" style="font-size:12px">↪ Trả LĐ Khách Hàng</button>
+        </div>
+      `}
+    </div>
+  `).join('');
+}
+
+async function loadReviews() {
+  document.getElementById('reviews-list').innerHTML = `<div style="text-align:center;padding:48px;color:var(--text-muted)">Đang tải...</div>`;
+  try {
+    allReviews = await API.getReviews();
+    renderReviews();
+  } catch(e) { Toast.error(e.message); }
+}
+
+function openReplyModal(id, customerName) {
+  replyTargetId = id;
+  document.getElementById('reply-target-info').textContent = `Đng trả lĐ đánh giá của khách hàng: ${customerName}`;
+  document.getElementById('reply-text').value = '';
+  document.getElementById('reply-modal').classList.add('open');
+}
+
+document.getElementById('submit-reply-btn').addEventListener('click', async () => {
+  const reply = document.getElementById('reply-text').value.trim();
+  if (!reply) return Toast.warning('Vui lòng nhập nội dung');
+  
+  try {
+    await API.replyReview(replyTargetId, { reply });
+    Toast.success('?ã gửi phản hồi thành công');
+    document.getElementById('reply-modal').classList.remove('open');
+    loadReviews(); // Refresh data
+  } catch(e) { Toast.error(e.message); }
+});
+
+loadReviews();
+</script>
+</body>
+</html>
+
+

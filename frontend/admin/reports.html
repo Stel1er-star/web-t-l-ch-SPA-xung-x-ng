@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Báo Cáo Doanh Thu — SpaProMax</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    .main-layout { display: flex; }
+    .chart-container { position: relative; height: 280px; }
+    .progress-bar-wrap { height: 8px; background: var(--bg-tertiary); border-radius: 4px; overflow: hidden; margin-top: 6px; }
+    .progress-bar-fill  { height: 100%; border-radius: 4px; transition: width 1s ease; }
+    .rank-badge { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
+    .rank-1 { background: var(--grad-gold); color: #fff; }
+    .rank-2 { background: rgba(148,163,184,0.3); color: var(--text-primary); }
+    .rank-3 { background: rgba(180,83,9,0.3); color: #FCD34D; }
+    .rank-other { background: var(--glass-bg); color: var(--text-muted); }
+    .month-pill {
+      padding: 5px 12px; border-radius: var(--radius-full); font-size: 12px; font-weight: 600;
+      cursor: pointer; border: 1px solid var(--border); background: var(--glass-bg); color: var(--text-secondary);
+      transition: var(--transition);
+    }
+    .month-pill:hover { border-color: var(--purple); color: var(--purple-lighter); }
+    .month-pill.active { background: rgba(124,58,237,0.2); border-color: var(--purple); color: var(--purple-lighter); }
+    .month-pill.all    { background: rgba(6,182,212,0.15); border-color: rgba(6,182,212,0.4); color: var(--teal-light); }
+  </style>
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="main-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="sidebar-logo-icon">🌿</div><span class="sidebar-logo-text">SpaProMax</span></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Tổng Quan</div>
+        <a href="dashboard.html" class="sidebar-link"><span class="sidebar-link-icon">📊</span> Dashboard</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Quản Lý</div>
+        <a href="appointments.html" class="sidebar-link"><span class="sidebar-link-icon">🗓️</span> Lịch Hẹn</a>
+        <a href="users.html" class="sidebar-link"><span class="sidebar-link-icon">👥</span> Người Dùng</a>
+        <a href="services.html" class="sidebar-link"><span class="sidebar-link-icon">✨</span> Dịch Vụ</a>
+        <a href="shifts.html" class="sidebar-link"><span class="sidebar-link-icon">🕐</span> Ca Làm Việc</a>
+        <a href="reviews.html" class="sidebar-link"><span class="sidebar-link-icon">⭐</span> Đánh Giá</a>
+        <a href="reports.html" class="sidebar-link active"><span class="sidebar-link-icon">📈</span> Báo Cáo</a>
+      </div>
+      <div class="sidebar-section">
+        <a href="../index.html" class="sidebar-link"><span class="sidebar-link-icon">🌐</span> Trang Chủ</a>
+        <a class="sidebar-link" data-action="logout"><span class="sidebar-link-icon">🚪</span> Đăng Xuất</a>
+      </div>
+    </nav>
+    <div class="sidebar-user">
+      <img id="sidebar-user-avatar" src="" class="sidebar-user-avatar">
+      <div><div class="sidebar-user-name" id="sidebar-user-name">—</div><div class="sidebar-user-role" id="sidebar-user-role">admin</div></div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <div class="topbar">
+      <div style="font-size:14px;color:var(--text-secondary)">Admin / Báo Cáo Doanh Thu</div>
+      <div class="topbar-actions">
+        <!-- Year filter -->
+        <select id="year-select" class="form-select" style="width:auto;padding:6px 12px;font-size:13px;height:34px;border-radius:var(--radius-full)">
+          <option value="">Năm...</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="loadReports()" style="height:34px">🔄 Làm Mới</button>
+      </div>
+    </div>
+
+    <div class="page-container">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px">
+        <div>
+          <h1 class="page-title font-heading">📈 Báo Cáo Doanh Thu</h1>
+          <p class="page-subtitle" id="report-period-label">Đang tải...</p>
+        </div>
+      </div>
+
+      <!-- Month pills -->
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:24px" id="month-pills">
+        <button class="month-pill all active" data-month="">Cả Năm</button>
+        <button class="month-pill" data-month="1">T1</button>
+        <button class="month-pill" data-month="2">T2</button>
+        <button class="month-pill" data-month="3">T3</button>
+        <button class="month-pill" data-month="4">T4</button>
+        <button class="month-pill" data-month="5">T5</button>
+        <button class="month-pill" data-month="6">T6</button>
+        <button class="month-pill" data-month="7">T7</button>
+        <button class="month-pill" data-month="8">T8</button>
+        <button class="month-pill" data-month="9">T9</button>
+        <button class="month-pill" data-month="10">T10</button>
+        <button class="month-pill" data-month="11">T11</button>
+        <button class="month-pill" data-month="12">T12</button>
+      </div>
+
+      <!-- Summary cards -->
+      <div class="grid-4" style="margin-bottom:28px" id="summary-cards">
+        <div class="stat-card gold"><div class="stat-icon gold">💰</div><div><div class="stat-label">Doanh Thu</div><div class="stat-value" id="s-revenue">—</div></div></div>
+        <div class="stat-card purple"><div class="stat-icon purple">🗓️</div><div><div class="stat-label">Lịch Hoàn Thành</div><div class="stat-value" id="s-total">—</div></div></div>
+        <div class="stat-card teal"><div class="stat-icon teal">💳</div><div><div class="stat-label">Có Đặt Cọc</div><div class="stat-value" id="s-deposit">—</div></div></div>
+        <div class="stat-card rose"><div class="stat-icon rose">❌</div><div><div class="stat-label">Đã Hủy</div><div class="stat-value" id="s-cancel">—</div></div></div>
+      </div>
+
+      <!-- Charts row -->
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;margin-bottom:28px">
+        <!-- Revenue chart -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Doanh Thu Theo Tháng</div>
+              <div class="card-subtitle" id="chart-year-label">—</div>
+            </div>
+            <span style="font-size:12px;background:rgba(124,58,237,0.15);color:var(--purple-lighter);padding:4px 10px;border-radius:20px;border:1px solid rgba(124,58,237,0.3)">Hoàn Thành</span>
+          </div>
+          <div class="chart-container"><canvas id="revenue-chart"></canvas></div>
+        </div>
+        <!-- Service donut -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">Theo Dịch Vụ</div></div>
+          <div class="chart-container" style="height:200px"><canvas id="service-chart"></canvas></div>
+          <div id="svc-legend" style="margin-top:12px;display:flex;flex-direction:column;gap:5px;max-height:120px;overflow-y:auto"></div>
+        </div>
+      </div>
+
+      <!-- Bottom row: Doctor ranking + Top customers -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+        <!-- Doctor ranking -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">🏆 Bác Sĩ / KTV Xuất Sắc</div>
+          </div>
+          <div id="doctor-ranking" style="display:flex;flex-direction:column;gap:14px"></div>
+        </div>
+
+        <!-- Top customers -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">⭐ Khách Hàng Thân Thiết</div>
+          </div>
+          <div id="top-customers" style="display:flex;flex-direction:column;gap:12px"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script>
+Auth.requireLogin('admin');
+populateSidebarUser();
+
+Chart.defaults.color = '#94A3B8';
+Chart.defaults.font.family = 'Inter';
+
+let revenueChart, serviceChart;
+let selectedYear = new Date().getFullYear();
+let selectedMonth = null;
+
+// ── Month pills
+document.querySelectorAll('.month-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('.month-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    selectedMonth = pill.dataset.month ? parseInt(pill.dataset.month) : null;
+    loadReports();
+  });
+});
+
+// ── Year select
+document.getElementById('year-select').addEventListener('change', e => {
+  selectedYear = parseInt(e.target.value) || new Date().getFullYear();
+  loadReports();
+});
+
+// ── Load all report data
+async function loadReports() {
+  try {
+    const params = { year: selectedYear };
+    if (selectedMonth) params.month = selectedMonth;
+
+    const data = await API.getAdminReports(params);
+    const { monthly, byService, byDoctor, periodSummary, topCustomers, years, yearVal, monthVal } = data;
+
+    // Populate year select
+    const sel = document.getElementById('year-select');
+    const currentVal = sel.value || yearVal;
+    sel.innerHTML = years.map(y => `<option value="${y}" ${y == currentVal ? 'selected' : ''}>${y}</option>`).join('');
+
+    // Period label
+    const monthNames = ['','Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+    document.getElementById('report-period-label').textContent =
+      monthVal ? `${monthNames[monthVal]} / ${yearVal}` : `Cả năm ${yearVal}`;
+    document.getElementById('chart-year-label').textContent = `Năm ${yearVal}`;
+
+    // Summary cards
+    document.getElementById('s-revenue').textContent = Fmt.currency(periodSummary?.revenue || 0);
+    animateCount(document.getElementById('s-total'),   periodSummary?.total || 0);
+    animateCount(document.getElementById('s-deposit'), periodSummary?.deposited || 0);
+    animateCount(document.getElementById('s-cancel'),  periodSummary?.cancelled || 0);
+
+    renderRevenueChart(monthly);
+    renderServiceChart(byService);
+    renderDoctorRanking(byDoctor);
+    renderTopCustomers(topCustomers);
+
+  } catch(e) { Toast.error('Lỗi tải báo cáo: ' + e.message); }
+}
+
+// ── Revenue Bar+Line Chart
+function renderRevenueChart(monthly) {
+  const MONTH_LABELS = ['T1','T2','T3','T4','T5','T6','T7','T8','T9','T10','T11','T12'];
+  const fullData = MONTH_LABELS.map((_, i) => {
+    const found = monthly.find(m => m.month === i + 1);
+    return { revenue: found ? found.revenue / 1_000_000 : 0, count: found ? found.count : 0 };
+  });
+
+  if (revenueChart) revenueChart.destroy();
+  revenueChart = new Chart(document.getElementById('revenue-chart'), {
+    type: 'bar',
+    data: {
+      labels: MONTH_LABELS,
+      datasets: [
+        {
+          label: 'Doanh Thu (triệu)',
+          data: fullData.map(d => d.revenue),
+          backgroundColor: (ctx) => {
+            const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 280);
+            g.addColorStop(0, 'rgba(124,58,237,0.8)');
+            g.addColorStop(1, 'rgba(124,58,237,0.1)');
+            return g;
+          },
+          borderColor: '#7C3AED', borderWidth: 0, borderRadius: 6,
+          yAxisID: 'y',
+        },
+        {
+          label: 'Số Lịch Hẹn',
+          data: fullData.map(d => d.count),
+          type: 'line',
+          borderColor: '#06B6D4', backgroundColor: 'transparent',
+          borderWidth: 2, tension: 0.4,
+          pointBackgroundColor: '#06B6D4', pointRadius: 4, pointHoverRadius: 6,
+          yAxisID: 'y1',
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true, labels: { color: '#94A3B8', font: { size: 12 }, boxWidth: 12 } },
+        tooltip: {
+          backgroundColor: '#1A1A35', borderColor: 'rgba(124,58,237,0.5)', borderWidth: 1,
+          callbacks: {
+            label: ctx => ctx.datasetIndex === 0
+              ? ` ${ctx.raw.toFixed(1)} triệu VNĐ`
+              : ` ${ctx.raw} lịch hẹn`
+          }
+        }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' } },
+        y:  { position: 'left',  grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { callback: v => v + 'M' } },
+        y1: { position: 'right', grid: { display: false }, ticks: { color: '#06B6D4' } }
+      }
+    }
+  });
+}
+
+// ── Service donut
+function renderServiceChart(byService) {
+  const COLORS = ['#7C3AED','#06B6D4','#F59E0B','#10B981','#F43F5E','#3B82F6','#A78BFA','#34D399'];
+  const topSvc = byService.slice(0, 6);
+  if (serviceChart) serviceChart.destroy();
+  serviceChart = new Chart(document.getElementById('service-chart'), {
+    type: 'doughnut',
+    data: {
+      labels: topSvc.map(s => s.name),
+      datasets: [{ data: topSvc.map(s => s.revenue), backgroundColor: COLORS, borderColor: '#0D0D1A', borderWidth: 3, hoverOffset: 6 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '65%',
+      plugins: { legend: { display: false }, tooltip: { backgroundColor: '#1A1A35', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
+        callbacks: { label: ctx => ` ${Fmt.currency(ctx.raw)}` }
+      }}
+    }
+  });
+
+  const legend = document.getElementById('svc-legend');
+  legend.innerHTML = topSvc.map((s, i) => `
+    <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px">
+      <div style="display:flex;align-items:center;gap:6px">
+        <div style="width:8px;height:8px;border-radius:2px;background:${COLORS[i]};flex-shrink:0"></div>
+        <span style="color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px">${s.icon || ''} ${s.name}</span>
+      </div>
+      <span style="color:var(--text-primary);font-weight:600;flex-shrink:0;margin-left:6px">${s.count}</span>
+    </div>
+  `).join('');
+}
+
+// ── Doctor ranking
+function renderDoctorRanking(doctors) {
+  const el = document.getElementById('doctor-ranking');
+  if (!doctors.length) { el.innerHTML = `<div style="color:var(--text-muted);text-align:center;padding:20px">Chưa có dữ liệu</div>`; return; }
+  const maxRevenue = Math.max(...doctors.map(d => d.revenue));
+  const rankClasses = ['rank-1','rank-2','rank-3'];
+
+  el.innerHTML = doctors.slice(0, 5).map((d, i) => {
+    const pct = maxRevenue > 0 ? Math.round(d.revenue / maxRevenue * 100) : 0;
+    const avgUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(d.name)}&background=7C3AED&color=fff&size=80`;
+    const colors = ['var(--gold)','#94A3B8','#B45309','var(--purple-lighter)','var(--purple-lighter)'];
+    return `
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <div class="rank-badge ${rankClasses[i] || 'rank-other'}">${i + 1}</div>
+          <img src="${d.image_url || avgUrl}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--border)"
+               onerror="this.src='${avgUrl}'">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.name}</div>
+            <div style="font-size:11px;color:var(--text-muted)">${d.specialty || 'Chuyên gia'} • ${d.count} lịch</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:13px;font-weight:700;color:${colors[i]}">${Fmt.currency(d.revenue)}</div>
+            ${d.avgRating ? `<div style="font-size:11px;color:var(--gold)">★ ${d.avgRating}</div>` : ''}
+          </div>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" style="width:${pct}%;background:${colors[i]}"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ── Top customers
+function renderTopCustomers(customers) {
+  const el = document.getElementById('top-customers');
+  if (!customers.length) { el.innerHTML = `<div style="color:var(--text-muted);text-align:center;padding:20px">Chưa có dữ liệu</div>`; return; }
+  const maxSpent = Math.max(...customers.map(c => c.totalSpent));
+
+  el.innerHTML = customers.map((c, i) => {
+    const pct = maxSpent > 0 ? Math.round(c.totalSpent / maxSpent * 100) : 0;
+    const avgUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(c.name)}&background=5B21B6&color=fff&size=80`;
+    const rankClasses = ['rank-1','rank-2','rank-3','rank-other','rank-other'];
+    return `
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <div class="rank-badge ${rankClasses[i]}">${i + 1}</div>
+          <img src="${c.image_url || avgUrl}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--border)"
+               onerror="this.src='${avgUrl}'">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.name}</div>
+            <div style="font-size:11px;color:var(--text-muted)">${c.visits} lần ghé thăm</div>
+          </div>
+          <div style="font-size:13px;font-weight:700;color:var(--gold);flex-shrink:0">${Fmt.currency(c.totalSpent)}</div>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" style="width:${pct}%;background:linear-gradient(90deg,#7C3AED,#06B6D4)"></div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+loadReports();
+</script>
+</body>
+</html>

@@ -11,13 +11,11 @@ const authenticate = (req, res, next) => {
     return res.status(401).json({ error: 'Access token required' });
   }
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+  jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret-key', (err, user) => {
+    if (err) return res.status(403).json({ error: 'Token không hợp lệ hoặc đã hết hạn' });
+    req.user = user;
     next();
-  } catch (err) {
-    return res.status(401).json({ error: 'Invalid or expired token' });
-  }
+  });
 };
 
 /**

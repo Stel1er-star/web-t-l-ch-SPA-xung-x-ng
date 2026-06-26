@@ -134,10 +134,38 @@ function renderAppts() {
   const filtered = currentFilter ? allAppts.filter(a => a.status === currentFilter) : allAppts;
   const el = document.getElementById('appts-list');
   if (!filtered.length) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-title">Không có lịch hẹn</div><div class="empty-state-desc">Bạn chưa có lịch hẹn nào trong danh mục này</div><a href="booking.html" class="btn btn-primary" style="margin-top:12px">Đặt Lịch Ngay</a></div>`;
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💭</div><div class="empty-state-title">Không có lịch hẹn</div><div class="empty-state-desc">Bạn chưa có lịch hẹn nào trong danh mục này</div><a href="booking.html" class="btn btn-primary" style="margin-top:12px">Đặt Lịch Ngay</a></div>`;
     return;
   }
-  el.innerHTML = filtered.map(a => `
+  el.innerHTML = filtered.map(a => {
+    // Countdown for upcoming appointments
+    let countdownHtml = '';
+    if (['pending','confirmed'].includes(a.status) && a.date) {
+      const apptDate = new Date(`${a.date}T${(a.time||'00:00').slice(0,5)}:00`);
+      const diffMs = apptDate - new Date();
+      if (diffMs > 0) {
+        const diffH = Math.floor(diffMs / 3600000);
+        const diffD = Math.floor(diffH / 24);
+        const remH  = diffH % 24;
+        const countdownStr = diffD > 0
+          ? `⏳ Còn ${diffD} ngày${remH > 0 ? ` ${remH} giờ` : ''}`
+          : `⏳ Còn ${diffH} giờ`;
+        const urgentColor = diffD < 1 ? 'var(--rose-light)' : diffD < 3 ? 'var(--gold)' : 'var(--emerald-light)';
+        countdownHtml = `<span style="font-size:12px;font-weight:600;color:${urgentColor};background:rgba(255,255,255,0.05);padding:3px 8px;border-radius:20px">${countdownStr}</span>`;
+      }
+    }
+    // Deposit/refund status
+    let depositHtml = '';
+    if (a.depositPaid) {
+      if (a.status === 'cancelled') {
+        depositHtml = a.depositRefunded
+          ? `<span style="font-size:12px;color:var(--emerald);font-weight:600">💰 Hoàn tiền cọc ✅</span>`
+          : `<span style="font-size:12px;color:var(--rose-light);font-weight:600">💰 Mất cọc ⚠️</span>`;
+      } else {
+        depositHtml = `<span style="font-size:12px;color:var(--gold);font-weight:600">💰 Đã cọc</span>`;
+      }
+    }
+    return `
     <div class="card" style="margin-bottom:16px">
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
         <img src="${a.staffImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(a.staffName)}&background=7C3AED&color=fff`}"
@@ -145,33 +173,35 @@ function renderAppts() {
              onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(a.staffName)}&background=7C3AED&color=fff'">
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px">
-            <span style="font-size:18px">${a.serviceIcon}</span>
+            <span style="font-size:18px">${a.serviceIcon||'✨'}</span>
             <span style="font-weight:700;font-size:16px">${a.serviceName}</span>
             ${Fmt.statusBadge(a.status)}
             ${Fmt.categoryBadge(a.serviceCategory)}
+            ${countdownHtml}
           </div>
           <div style="font-size:13px;color:var(--text-secondary);margin-bottom:4px">
             👨‍⚕️ ${a.staffName} ${a.staffSpecialty ? `(${a.staffSpecialty})` : ''}
           </div>
-          <div style="display:flex;gap:16px;font-size:13px;color:var(--text-muted);flex-wrap:wrap">
+          <div style="display:flex;gap:16px;font-size:13px;color:var(--text-muted);flex-wrap:wrap;align-items:center">
             <span>📅 ${Fmt.date(a.date)}</span>
-            <span>🕐 ${a.time}</span>
-            <span>⏱ ${a.serviceDuration} phút</span>
+            <span>🕐 ${String(a.time||'').slice(0,5)}</span>
+            <span>⏱ ${a.serviceDuration||60} phút</span>
             <span style="color:var(--gold);font-weight:600">💰 ${Fmt.currency(a.price)}</span>
-            ${a.depositPaid ? `<span style="color:var(--emerald)">✅ Đã đặt cọc</span>` : ''}
+            ${depositHtml}
           </div>
           ${a.note ? `<div style="margin-top:6px;font-size:12px;color:var(--text-muted);background:rgba(255,255,255,0.03);padding:8px 10px;border-radius:8px">📝 ${a.note}</div>` : ''}
           ${a.medicalNote ? `<div style="margin-top:6px;font-size:12px;color:var(--teal-light);background:rgba(6,182,212,0.08);padding:8px 10px;border-radius:8px;border-left:3px solid var(--teal)">🩺 <b>Kết quả:</b> ${a.medicalNote}</div>` : ''}
           ${a.cancel_reason ? `<div style="margin-top:6px;font-size:12px;color:var(--rose-light);background:rgba(244,63,94,0.08);padding:8px 10px;border-radius:8px">❌ Lý do hủy: ${a.cancel_reason}</div>` : ''}
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0">
-          ${['pending','confirmed'].includes(a.status) ? `<button class="btn btn-danger btn-sm" onclick="openCancelModal('${a.id}', '${a.date}', '${a.time}', ${a.depositPaid})">Hủy Lịch</button>` : ''}
-          ${a.status === 'completed' && !a.reviewId ? `<button class="btn btn-primary btn-sm" onclick="openReviewModal('${a.id}', '${a.staffId}', '${a.serviceId}')">⭐ Đánh Giá</button>` : ''}
+          ${['pending','confirmed'].includes(a.status) && (new Date(`${a.date}T${(a.time||'23:59').slice(0,5)}:00`) > new Date()) ? `<button class="btn btn-danger btn-sm" onclick="openCancelModal('${a.id}', '${a.date}', '${a.time}', ${a.depositPaid})">Hủy Lịch</button>` : ''}
+          ${a.status === 'completed' && !a.reviewId ? `<button class="btn btn-primary btn-sm" onclick="openReviewModal('${a.id}', '${a.staffId}', '${a.serviceId}')">\u2b50 Đánh Giá</button>` : ''}
           ${a.reviewId ? `<span style="font-size:12px;color:var(--emerald);font-weight:600">✅ Đã đánh giá</span>` : ''}
         </div>
       </div>
     </div>
-  `).join('');
+    `;
+  }).join('');
 }
 
 async function loadAppts() {

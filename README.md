@@ -50,7 +50,7 @@ Mở trình duyệt và truy cập: **`http://localhost:3002`**
 
 **1. Quản Trị Viên (Admin)**
 - **Username**: `admin`
-- **Password**: `admin123`
+- **Password**: `password`
 - **Tính năng**: Quản lý ca làm việc, dịch vụ, doanh thu.
 
 **2. Bác Sĩ / Kỹ Thuật Viên (Doctor/Staff)**
