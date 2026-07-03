@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -37,13 +37,13 @@
         <a href="dashboard.html" class="sidebar-link"><span class="sidebar-link-icon">📊</span> Tổng Quan</a>
         <a href="users.html" class="sidebar-link"><span class="sidebar-link-icon">👥</span> Quản Lý User</a>
         <a href="services.html" class="sidebar-link"><span class="sidebar-link-icon">✨</span> Dịch Vụ</a>
-        <a href="appointments.html" class="sidebar-link"><span class="sidebar-link-icon">🗓?</span> Lịch Hẹn</a>
-        <a href="reviews.html" class="sidebar-link active"><span class="sidebar-link-icon">?</span> Đánh Giá</a>
+        <a href="appointments.html" class="sidebar-link"><span class="sidebar-link-icon">🗓️</span> Lịch Hẹn</a>
+        <a href="reviews.html" class="sidebar-link active"><span class="sidebar-link-icon">⭐</span> Đánh Giá</a>
         <a href="reports.html" class="sidebar-link"><span class="sidebar-link-icon">📈</span> Báo Cáo</a>
       </div>
       <div class="sidebar-section">
-        <a href="../index.html" class="sidebar-link"><span class="sidebar-link-icon">?</span> Trang Chủ</a>
-        <a class="sidebar-link" data-action="logout"><span class="sidebar-link-icon">🚪</span> ?ăng Xuất</a>
+        <a href="../index.html" class="sidebar-link"><span class="sidebar-link-icon">🏠</span> Trang Chủ</a>
+        <a class="sidebar-link" data-action="logout"><span class="sidebar-link-icon">🚪</span> Đăng Xuất</a>
       </div>
     </nav>
     <div class="sidebar-user">
@@ -57,11 +57,11 @@
       <div style="font-size:14px;color:var(--text-secondary)">Admin / Quản Lý Đánh Giá</div>
       <div class="topbar-actions">
         <div style="display:flex;align-items:center;gap:6px;background:var(--glass-bg);border:1px solid var(--border);border-radius:var(--radius-full);padding:6px 14px">
-          <span style="color:var(--text-muted);font-size:13px">?</span>
+          <span style="color:var(--text-muted);font-size:13px">🔍</span>
           <input type="text" id="search-input" placeholder="Tìm tên khách..." style="background:transparent;border:none;font-size:13px;color:var(--text-primary);width:160px">
         </div>
         <select id="filter-rating" class="form-select" style="width:auto;padding:6px 12px;font-size:13px;height:34px;border-radius:var(--radius-full)">
-          <option value="">? Tất cả số sao</option>
+          <option value="">⭐ Tất cả số sao</option>
           <option value="5">5 Sao</option>
           <option value="4">4 Sao</option>
           <option value="3">3 Sao</option>
@@ -85,17 +85,17 @@
 <div class="modal-overlay" id="reply-modal">
   <div class="modal-content" style="max-width:500px">
     <div class="modal-header">
-      <div class="modal-title font-heading">Trả LĐ Đánh Giá</div>
+      <div class="modal-title font-heading">Trả Lời Đánh Giá</div>
       <button class="modal-close" onclick="document.getElementById('reply-modal').classList.remove('open')">×</button>
     </div>
     <div style="margin-bottom:16px;font-size:13px;color:var(--text-secondary)" id="reply-target-info"></div>
     <div class="form-group">
       <label class="form-label">Nội dung phản hồi từ Admin/Bác sĩ</label>
-      <textarea id="reply-text" class="form-input form-textarea" placeholder="Nhập câu trả lĐ của bạn..." style="height:100px"></textarea>
+      <textarea id="reply-text" class="form-input form-textarea" placeholder="Nhập câu trả lời của bạn..." style="height:100px"></textarea>
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="document.getElementById('reply-modal').classList.remove('open')">Hủy</button>
-      <button class="btn btn-primary" id="submit-reply-btn">Gửi Trả LĐ</button>
+      <button class="btn btn-primary" id="submit-reply-btn">Gửi Trả Lời</button>
     </div>
   </div>
 </div>
@@ -154,7 +154,7 @@ function renderReviews() {
         </div>
       ` : `
         <div style="margin-top:12px">
-          <button class="btn btn-outline btn-sm" onclick="openReplyModal('${r.id}', '${r.customerName}')" style="font-size:12px">↪ Trả LĐ Khách Hàng</button>
+          <button class="btn btn-outline btn-sm" onclick="openReplyModal('${r.id}', '${r.customerName}')" style="font-size:12px">↪ Trả Lời Khách Hàng</button>
         </div>
       `}
     </div>
@@ -171,7 +171,7 @@ async function loadReviews() {
 
 function openReplyModal(id, customerName) {
   replyTargetId = id;
-  document.getElementById('reply-target-info').textContent = `Đng trả lĐ đánh giá của khách hàng: ${customerName}`;
+  document.getElementById('reply-target-info').textContent = `Đang trả lời đánh giá của khách hàng: ${customerName}`;
   document.getElementById('reply-text').value = '';
   document.getElementById('reply-modal').classList.add('open');
 }
@@ -182,7 +182,7 @@ document.getElementById('submit-reply-btn').addEventListener('click', async () =
   
   try {
     await API.replyReview(replyTargetId, { reply });
-    Toast.success('?ã gửi phản hồi thành công');
+    Toast.success('Đã gửi phản hồi thành công');
     document.getElementById('reply-modal').classList.remove('open');
     loadReviews(); // Refresh data
   } catch(e) { Toast.error(e.message); }
