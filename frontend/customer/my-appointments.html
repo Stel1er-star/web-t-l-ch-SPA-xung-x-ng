@@ -141,7 +141,7 @@ function renderAppts() {
     // Countdown for upcoming appointments
     let countdownHtml = '';
     if (['pending','confirmed'].includes(a.status) && a.date) {
-      const apptDate = new Date(`${a.date}T${(a.time||'00:00').slice(0,5)}:00`);
+      const apptDate = new Date(`${Fmt.toYYYYMMDD(a.date)}T${(a.time||'00:00').slice(0,5)}:00`);
       const diffMs = apptDate - new Date();
       if (diffMs > 0) {
         const diffH = Math.floor(diffMs / 3600000);
@@ -194,7 +194,7 @@ function renderAppts() {
           ${a.cancel_reason ? `<div style="margin-top:6px;font-size:12px;color:var(--rose-light);background:rgba(244,63,94,0.08);padding:8px 10px;border-radius:8px">❌ Lý do hủy: ${a.cancel_reason}</div>` : ''}
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0">
-          ${['pending','confirmed'].includes(a.status) && (new Date(`${a.date}T${(a.time||'23:59').slice(0,5)}:00`) > new Date()) ? `<button class="btn btn-danger btn-sm" onclick="openCancelModal('${a.id}', '${a.date}', '${a.time}', ${a.depositPaid})">Hủy Lịch</button>` : ''}
+          ${['pending','confirmed'].includes(a.status) && (new Date(`${Fmt.toYYYYMMDD(a.date)}T${(a.time||'23:59').slice(0,5)}:00`) > new Date()) ? `<button class="btn btn-danger btn-sm" onclick="openCancelModal('${a.id}', '${Fmt.toYYYYMMDD(a.date)}', '${a.time}', ${a.depositPaid})">Hủy Lịch</button>` : ''}
           ${a.status === 'completed' && !a.reviewId ? `<button class="btn btn-primary btn-sm" onclick="openReviewModal('${a.id}', '${a.staffId}', '${a.serviceId}')">\u2b50 Đánh Giá</button>` : ''}
           ${a.reviewId ? `<span style="font-size:12px;color:var(--emerald);font-weight:600">✅ Đã đánh giá</span>` : ''}
         </div>

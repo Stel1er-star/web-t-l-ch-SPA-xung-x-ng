@@ -173,7 +173,7 @@ function renderTable() {
   let list = allAppts;
   if (activeStatus) list = list.filter(a => a.status === activeStatus);
   const dateVal = document.getElementById('date-filter').value;
-  if (dateVal) list = list.filter(a => a.date === dateVal);
+  if (dateVal) list = list.filter(a => Fmt.toYYYYMMDD(a.date) === dateVal);
 
   const el = document.getElementById('appt-list');
   if (!list.length) {
@@ -241,12 +241,12 @@ function getActionBtns(a) {
 async function loadAppts() {
   try {
     allAppts = await API.getAppointments();
-    const today = new Date().toISOString().split('T')[0];
+    const today = Fmt.toYYYYMMDD(new Date());
 
     // Stats
     document.getElementById('s-total').textContent   = allAppts.length;
     document.getElementById('s-pending').textContent = allAppts.filter(a => a.status === 'pending').length;
-    document.getElementById('s-today').textContent   = allAppts.filter(a => a.date === today).length;
+    document.getElementById('s-today').textContent   = allAppts.filter(a => Fmt.toYYYYMMDD(a.date) === today).length;
     document.getElementById('s-done').textContent    = allAppts.filter(a => a.status === 'completed').length;
 
     renderTable();
