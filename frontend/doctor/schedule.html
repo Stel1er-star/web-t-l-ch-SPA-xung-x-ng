@@ -367,8 +367,9 @@ function renderCalendar() {
   // Build appointment map: dateStr → [appt list]
   const apptByDate = {};
   myAppts.forEach(a => {
-    if (!apptByDate[a.date]) apptByDate[a.date] = [];
-    apptByDate[a.date].push(a);
+    const dStr = Fmt.toYYYYMMDD(a.date);
+    if (!apptByDate[dStr]) apptByDate[dStr] = [];
+    apptByDate[dStr].push(a);
   });
 
   // Time rows (7:00 to 20:00, each 48px = 30 min blocks would be 24px)
@@ -431,9 +432,9 @@ function updateStats() {
   const todayStr = formatDate(new Date());
 
   document.getElementById('st-shifts').textContent  = myShifts.length;
-  document.getElementById('st-week').textContent    = myAppts.filter(a => dateStrs.has(a.date)).length;
+  document.getElementById('st-week').textContent    = myAppts.filter(a => dateStrs.has(Fmt.toYYYYMMDD(a.date))).length;
   document.getElementById('st-pending').textContent = myAppts.filter(a => a.status === 'pending').length;
-  document.getElementById('st-today').textContent   = myAppts.filter(a => a.date === todayStr).length;
+  document.getElementById('st-today').textContent   = myAppts.filter(a => Fmt.toYYYYMMDD(a.date) === todayStr).length;
 }
 
 // ── Load data ─────────────────────────────────────────────
