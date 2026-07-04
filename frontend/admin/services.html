@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -52,8 +52,13 @@
         <textarea class="form-input form-textarea" id="s-desc" placeholder="Mô tả về dịch vụ..." style="min-height:80px"></textarea>
       </div>
       <div class="form-group">
-        <label class="form-label">URL Hình Ảnh</label>
-        <input type="url" id="s-img" class="form-input" placeholder="https://...">
+        <label class="form-label">URL Hình Ảnh <span style="color:var(--text-muted);font-size:11px">(Phải là link ảnh trực tiếp, đuôi .jpg/.png hoặc từ unsplash.com)</span></label>
+        <input type="url" id="s-img" class="form-input" placeholder="https://images.unsplash.com/...">
+        <div id="img-preview-wrap" style="margin-top:8px;display:none">
+          <img id="img-preview" src="" alt="Preview" style="width:100%;height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--border)"
+               onerror="document.getElementById('img-err').style.display='block';this.style.display='none'">
+          <div id="img-err" style="display:none;color:var(--rose);font-size:12px;margin-top:4px">⚠️ Không load được ảnh! Hãy dùng link ảnh trực tiếp (đuôi .jpg, .png, .webp) hoặc link từ unsplash.com</div>
+        </div>
       </div>
       <div class="modal-footer" style="margin-top:4px">
         <button type="button" class="btn btn-ghost" onclick="closeSvcModal()">Hủy</button>
@@ -185,6 +190,36 @@ async function loadServices() {
   } catch(e) { Toast.error(e.message); }
 }
 
+// Image preview live
+document.getElementById('s-img').addEventListener('input', (e) => {
+  const url = e.target.value.trim();
+  const wrap = document.getElementById('img-preview-wrap');
+  const img  = document.getElementById('img-preview');
+  const err  = document.getElementById('img-err');
+  if (!url) { wrap.style.display = 'none'; return; }
+
+  // Detect Unsplash page URL (not direct image)
+  if (url.includes('unsplash.com/photos/')) {
+    wrap.style.display = 'block';
+    img.style.display = 'none';
+    err.style.display = 'block';
+    err.innerHTML = `⚠️ Đây là link <b>trang web</b> Unsplash, không phải link ảnh!<br>
+      👉 Vào <a href="${url}" target="_blank" style="color:var(--purple-light)">trang ảnh này</a> → Click chuột phải vào ảnh → Chọn <b>"Copy image address"</b> → Dán vào đây.`;
+    return;
+  }
+
+  wrap.style.display = 'block';
+  img.style.display = 'block';
+  err.style.display = 'none';
+  img.src = url;
+});
+
+function resetImgPreview() {
+  document.getElementById('img-preview-wrap').style.display = 'none';
+  document.getElementById('img-preview').src = '';
+  document.getElementById('img-err').style.display = 'none';
+}
+
 let editId = null;
 function openAdd() {
   editId = null;
@@ -197,6 +232,7 @@ function openAdd() {
   document.getElementById('s-price').value = '';
   document.getElementById('s-desc').value = '';
   document.getElementById('s-img').value = '';
+  resetImgPreview();
   document.getElementById('svc-modal').classList.add('open');
 }
 function openEdit(s) {
@@ -209,6 +245,13 @@ function openEdit(s) {
   document.getElementById('s-price').value = s.price;
   document.getElementById('s-desc').value = s.description || '';
   document.getElementById('s-img').value = s.image_url || '';
+  // Show existing image preview
+  if (s.image_url) {
+    document.getElementById('img-preview-wrap').style.display = 'block';
+    document.getElementById('img-preview').style.display = 'block';
+    document.getElementById('img-err').style.display = 'none';
+    document.getElementById('img-preview').src = s.image_url;
+  } else { resetImgPreview(); }
   document.getElementById('svc-modal').classList.add('open');
 }
 function closeSvcModal() { document.getElementById('svc-modal').classList.remove('open'); }
