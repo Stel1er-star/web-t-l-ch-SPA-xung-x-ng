@@ -39,7 +39,7 @@ exports.create = async (req, res) => {
 
 exports.reply = async (req, res) => {
   try {
-    const { staffReply } = req.body;
+    const staffReply = req.body.staffReply || req.body.reply;
     const review = await ReviewModel.findById(req.params.id);
     if (!review) return res.status(404).json({ error: 'Không tìm thấy đánh giá' });
     if (req.user.role === 'doctor' && review.staffId !== req.user.id) return res.status(403).json({ error: 'Không có quyền' });

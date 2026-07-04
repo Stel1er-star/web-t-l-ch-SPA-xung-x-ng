@@ -23,7 +23,7 @@ class AppointmentModel {
       `SELECT a.*,
               s.name as staffName, s.specialty as staffSpecialty, s.image_url as staffImage,
               sv.name as serviceName, sv.category as serviceCategory, sv.duration as serviceDuration, sv.icon as serviceIcon,
-              r.id as reviewId, r.rating as reviewRating
+              r.id as reviewId, r.rating as reviewRating, r.staffReply as staffReply
        FROM Appointments a
        JOIN Users s ON s.id = a.staffId
        JOIN Services sv ON sv.id = a.serviceId
