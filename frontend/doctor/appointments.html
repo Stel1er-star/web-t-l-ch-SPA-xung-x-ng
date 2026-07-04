@@ -1,9 +1,13 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lịch Hẹn Của Tôi — SpaProMax</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="../css/variables.css">
   <link rel="stylesheet" href="../css/global.css">
   <link rel="stylesheet" href="../css/components.css">
@@ -14,11 +18,18 @@
       gap: 12px;
       align-items: center;
       padding: 14px 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
       transition: var(--transition);
     }
-    .appt-row:hover { background: rgba(255,255,255,0.03); }
-    .appt-row:last-child { border-bottom: none; }
+
+    .appt-row:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .appt-row:last-child {
+      border-bottom: none;
+    }
+
     .appt-header {
       display: grid;
       grid-template-columns: 80px 60px 1fr 140px 110px 130px;
@@ -31,161 +42,209 @@
       letter-spacing: 0.06em;
       color: var(--text-muted);
     }
-    .note-form { background: rgba(124,58,237,0.08); border-radius: var(--radius); padding: 14px; margin-top: 10px; border: 1px solid rgba(124,58,237,0.2); }
+
+    .note-form {
+      background: rgba(124, 58, 237, 0.08);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-top: 10px;
+      border: 1px solid rgba(124, 58, 237, 0.2);
+    }
   </style>
 </head>
-<body>
-<div id="toast-container"></div>
 
-<!-- Medical Note Modal -->
-<div class="modal-overlay" id="note-modal">
-  <div class="modal" style="max-width:480px">
-    <div class="modal-header">
-      <div class="modal-title">📋 Ghi Chú Y Tế</div>
-      <button class="modal-close" onclick="document.getElementById('note-modal').classList.remove('open')">✕</button>
-    </div>
-    <div style="margin-bottom:14px;padding:12px;background:var(--glass-bg);border-radius:var(--radius);border:1px solid var(--border)">
-      <div style="font-size:13px;font-weight:600" id="note-modal-customer">—</div>
-      <div style="font-size:12px;color:var(--text-secondary);margin-top:4px" id="note-modal-service">—</div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Ghi Chú / Kết Quả Khám</label>
-      <textarea class="form-input form-textarea" id="note-content" rows="5" placeholder="Nhập ghi chú y tế, kết quả khám, hướng dẫn điều trị..."></textarea>
-    </div>
-    <div class="modal-footer" style="margin-top:12px">
-      <button class="btn btn-ghost" onclick="document.getElementById('note-modal').classList.remove('open')">Hủy</button>
-      <button class="btn btn-primary" onclick="saveNote()">💾 Lưu Ghi Chú</button>
+<body>
+  <div id="toast-container"></div>
+
+  <!-- Medical Note Modal -->
+  <div class="modal-overlay" id="note-modal">
+    <div class="modal" style="max-width:480px">
+      <div class="modal-header">
+        <div class="modal-title">📋 Ghi Chú Y Tế</div>
+        <button class="modal-close" onclick="document.getElementById('note-modal').classList.remove('open')">✕</button>
+      </div>
+      <div
+        style="margin-bottom:14px;padding:12px;background:var(--glass-bg);border-radius:var(--radius);border:1px solid var(--border)">
+        <div style="font-size:13px;font-weight:600" id="note-modal-customer">—</div>
+        <div style="font-size:12px;color:var(--text-secondary);margin-top:4px" id="note-modal-service">—</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ghi Chú / Kết Quả Khám</label>
+        <textarea class="form-input form-textarea" id="note-content" rows="5"
+          placeholder="Nhập ghi chú y tế, kết quả khám, hướng dẫn điều trị..."></textarea>
+      </div>
+      <div class="modal-footer" style="margin-top:12px">
+        <button class="btn btn-ghost"
+          onclick="document.getElementById('note-modal').classList.remove('open')">Hủy</button>
+        <button class="btn btn-primary" onclick="saveNote()">💾 Lưu Ghi Chú</button>
+      </div>
     </div>
   </div>
-</div>
 
-<div class="main-layout">
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sidebar-logo"><div class="sidebar-logo-icon">🌿</div><span class="sidebar-logo-text">SpaProMax</span></div>
-    <nav class="sidebar-nav">
-      <div class="sidebar-section">
-        <div class="sidebar-section-title">Làm Việc</div>
-        <a href="dashboard.html" class="sidebar-link"><span class="sidebar-link-icon">📊</span> Tổng Quan</a>
-        <a href="appointments.html" class="sidebar-link active"><span class="sidebar-link-icon">🗓️</span> Lịch Hẹn</a>
-        <a href="schedule.html" class="sidebar-link"><span class="sidebar-link-icon">🕐</span> Lịch Làm Việc</a>
+  <div class="main-layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">🌿</div><span class="sidebar-logo-text">SpaProMax</span>
       </div>
-      <div class="sidebar-section">
-        <div class="sidebar-section-title">Của Tôi</div>
-        <a href="profile.html" class="sidebar-link"><span class="sidebar-link-icon">👤</span> Hồ Sơ</a>
-      </div>
-      <div class="sidebar-section">
-        <a href="../index.html" class="sidebar-link"><span class="sidebar-link-icon">🌐</span> Trang Chủ</a>
-        <a class="sidebar-link" data-action="logout"><span class="sidebar-link-icon">🚪</span> Đăng Xuất</a>
-      </div>
-    </nav>
-    <div class="sidebar-user">
-      <img id="sidebar-user-avatar" src="" class="sidebar-user-avatar">
-      <div>
-        <div class="sidebar-user-name" id="sidebar-user-name">—</div>
-        <div class="sidebar-user-role" id="sidebar-user-role">Bác sĩ / KTV</div>
-      </div>
-    </div>
-  </aside>
-
-  <!-- MAIN -->
-  <main class="main-content">
-    <div class="topbar">
-      <div style="font-size:14px;color:var(--text-secondary)">Bác Sĩ / Lịch Hẹn</div>
-      <div class="topbar-actions">
-        <button class="btn btn-ghost btn-sm" onclick="loadAppts()">🔄 Làm Mới</button>
-      </div>
-    </div>
-
-    <div class="page-container">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:16px">
+      <nav class="sidebar-nav">
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Làm Việc</div>
+          <a href="dashboard.html" class="sidebar-link"><span class="sidebar-link-icon">📊</span> Tổng Quan</a>
+          <a href="appointments.html" class="sidebar-link active"><span class="sidebar-link-icon">🗓️</span> Lịch
+            Hẹn</a>
+          <a href="schedule.html" class="sidebar-link"><span class="sidebar-link-icon">🕐</span> Lịch Làm Việc</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Của Tôi</div>
+          <a href="profile.html" class="sidebar-link"><span class="sidebar-link-icon">👤</span> Hồ Sơ</a>
+        </div>
+        <div class="sidebar-section">
+          <a href="../index.html" class="sidebar-link"><span class="sidebar-link-icon">🌐</span> Trang Chủ</a>
+          <a class="sidebar-link" data-action="logout"><span class="sidebar-link-icon">🚪</span> Đăng Xuất</a>
+        </div>
+      </nav>
+      <div class="sidebar-user">
+        <img id="sidebar-user-avatar" src="" class="sidebar-user-avatar">
         <div>
-          <h1 class="page-title font-heading">Lịch Hẹn Của Tôi</h1>
-          <p class="page-subtitle">Quản lý & cập nhật trạng thái lịch hẹn</p>
+          <div class="sidebar-user-name" id="sidebar-user-name">—</div>
+          <div class="sidebar-user-role" id="sidebar-user-role">Bác sĩ / KTV</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-content">
+      <div class="topbar">
+        <div style="font-size:14px;color:var(--text-secondary)">Bác Sĩ / Lịch Hẹn</div>
+        <div class="topbar-actions">
+          <button class="btn btn-ghost btn-sm" onclick="refreshAll()">🔄 Làm Mới</button>
         </div>
       </div>
 
-      <!-- Stats -->
-      <div class="grid-4" style="margin-bottom:28px" id="appt-stats">
-        <div class="stat-card purple"><div class="stat-icon purple">📅</div><div><div class="stat-label">Tổng Lịch</div><div class="stat-value" id="s-total">—</div></div></div>
-        <div class="stat-card gold"><div class="stat-icon gold">⏳</div><div><div class="stat-label">Chờ Xác Nhận</div><div class="stat-value" id="s-pending">—</div></div></div>
-        <div class="stat-card teal"><div class="stat-icon teal">✅</div><div><div class="stat-label">Hôm Nay</div><div class="stat-value" id="s-today">—</div></div></div>
-        <div class="stat-card blue"><div class="stat-icon blue">🏆</div><div><div class="stat-label">Hoàn Thành</div><div class="stat-value" id="s-done">—</div></div></div>
-      </div>
-
-      <!-- Filters -->
-      <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center">
-        <div style="display:flex;gap:6px;flex-wrap:wrap" id="status-filter">
-          <button class="filter-tab active" data-status="">Tất Cả</button>
-          <button class="filter-tab" data-status="pending">⏳ Chờ Xác Nhận</button>
-          <button class="filter-tab" data-status="confirmed">✓ Đã Xác Nhận</button>
-          <button class="filter-tab" data-status="in-progress">▶ Đang Khám</button>
-          <button class="filter-tab" data-status="completed">✅ Hoàn Thành</button>
-          <button class="filter-tab" data-status="cancelled">✕ Đã Hủy</button>
+      <div class="page-container">
+        <div
+          style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:16px">
+          <div>
+            <h1 class="page-title font-heading">Lịch Hẹn Của Tôi</h1>
+            <p class="page-subtitle">Quản lý & cập nhật trạng thái lịch hẹn</p>
+          </div>
         </div>
-        <input type="date" class="form-input" id="date-filter" style="width:auto;padding:8px 12px;flex-shrink:0" title="Lọc theo ngày">
-      </div>
 
-      <!-- Table -->
-      <div class="card" style="padding:0;overflow:hidden">
-        <div class="appt-header">
-          <div>Ngày</div>
-          <div>Giờ</div>
-          <div>Khách Hàng</div>
-          <div>Dịch Vụ</div>
-          <div>Trạng Thái</div>
-          <div>Thao Tác</div>
+        <!-- Stats -->
+        <div class="grid-4" style="margin-bottom:28px" id="appt-stats">
+          <div class="stat-card purple">
+            <div class="stat-icon purple">📅</div>
+            <div>
+              <div class="stat-label">Tổng Lịch</div>
+              <div class="stat-value" id="s-total">—</div>
+            </div>
+          </div>
+          <div class="stat-card gold">
+            <div class="stat-icon gold">⏳</div>
+            <div>
+              <div class="stat-label">Chờ Xác Nhận</div>
+              <div class="stat-value" id="s-pending">—</div>
+            </div>
+          </div>
+          <div class="stat-card teal">
+            <div class="stat-icon teal">✅</div>
+            <div>
+              <div class="stat-label">Hôm Nay</div>
+              <div class="stat-value" id="s-today">—</div>
+            </div>
+          </div>
+          <div class="stat-card blue">
+            <div class="stat-icon blue">🏆</div>
+            <div>
+              <div class="stat-label">Hoàn Thành</div>
+              <div class="stat-value" id="s-done">—</div>
+            </div>
+          </div>
         </div>
-        <div id="appt-list">
-          <div style="text-align:center;padding:64px;color:var(--text-muted)">
-            <div class="loader-ring" style="margin:0 auto 16px"></div>
-            Đang tải lịch hẹn...
+
+        <!-- Filters -->
+        <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center">
+          <div style="display:flex;gap:6px;flex-wrap:wrap" id="status-filter">
+            <button class="filter-tab active" data-status="">Tất Cả</button>
+            <button class="filter-tab" data-status="pending">⏳ Chờ Xác Nhận</button>
+            <button class="filter-tab" data-status="confirmed">✓ Đã Xác Nhận</button>
+            <button class="filter-tab" data-status="in-progress">▶ Đang Khám</button>
+            <button class="filter-tab" data-status="completed">✅ Hoàn Thành</button>
+            <button class="filter-tab" data-status="cancelled">✕ Đã Hủy</button>
+          </div>
+          <input type="date" class="form-input" id="date-filter" style="width:auto;padding:8px 12px;flex-shrink:0"
+            title="Lọc theo ngày">
+        </div>
+
+        <!-- Table -->
+        <div class="card" style="padding:0;overflow:hidden">
+          <div class="appt-header">
+            <div>Ngày</div>
+            <div>Giờ</div>
+            <div>Khách Hàng</div>
+            <div>Dịch Vụ</div>
+            <div>Trạng Thái</div>
+            <div>Thao Tác</div>
+          </div>
+          <div id="appt-list">
+            <div style="text-align:center;padding:64px;color:var(--text-muted)">
+              <div class="loader-ring" style="margin:0 auto 16px"></div>
+              Đang tải lịch hẹn...
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </main>
-</div>
+    </main>
+  </div>
 
-<script src="../js/api.js"></script>
-<script src="../js/auth.js"></script>
-<script>
-Auth.requireLogin('doctor');
-populateSidebarUser();
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script>
+    Auth.requireLogin('doctor');
+    populateSidebarUser();
 
-const user = Auth.getUser();
-let allAppts = [], activeStatus = '', noteTarget = null;
+    const user = Auth.getUser();
+    let allAppts = [], activeStatus = '', noteTarget = null;
 
-// ─── Filter tabs ──────────────────────────────────────────
-document.querySelectorAll('#status-filter .filter-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('#status-filter .filter-tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    activeStatus = tab.dataset.status;
-    renderTable();
-  });
-});
+    // ─── Filter tabs ──────────────────────────────────────────
+    document.querySelectorAll('#status-filter .filter-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('#status-filter .filter-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        activeStatus = tab.dataset.status;
+        renderTable();
+      });
+    });
 
-document.getElementById('date-filter').addEventListener('change', renderTable);
+    document.getElementById('date-filter').addEventListener('change', renderTable);
 
-// ─── Render ───────────────────────────────────────────────
-function renderTable() {
-  let list = allAppts;
-  if (activeStatus) list = list.filter(a => a.status === activeStatus);
-  const dateVal = document.getElementById('date-filter').value;
-  if (dateVal) list = list.filter(a => Fmt.toYYYYMMDD(a.date) === dateVal);
+    function refreshAll() {
+      document.getElementById('date-filter').value = '';
+      document.querySelectorAll('#status-filter .filter-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector('#status-filter .filter-tab[data-status=""]').classList.add('active');
+      activeStatus = '';
+      loadAppts();
+    }
 
-  const el = document.getElementById('appt-list');
-  if (!list.length) {
-    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🗓️</div><div class="empty-state-title">Không có lịch hẹn nào</div><div class="empty-state-desc">Chưa có lịch hẹn nào phù hợp với bộ lọc</div></div>`;
-    return;
-  }
+    // ─── Render ───────────────────────────────────────────────
+    function renderTable() {
+      let list = allAppts;
+      if (activeStatus) list = list.filter(a => a.status === activeStatus);
+      const dateVal = document.getElementById('date-filter').value;
+      if (dateVal) list = list.filter(a => Fmt.toYYYYMMDD(a.date) === dateVal);
 
-  el.innerHTML = list.map(a => {
-    const dateStr = Fmt.dateShort(a.date);
-    const timeStr = String(a.time || '').slice(0, 5);
-    const btnHtml = getActionBtns(a);
-    return `
+      const el = document.getElementById('appt-list');
+      if (!list.length) {
+        el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🗓️</div><div class="empty-state-title">Không có lịch hẹn nào</div><div class="empty-state-desc">Chưa có lịch hẹn nào phù hợp với bộ lọc</div></div>`;
+        return;
+      }
+
+      el.innerHTML = list.map(a => {
+        const dateStr = Fmt.dateShort(a.date);
+        const timeStr = String(a.time || '').slice(0, 5);
+        const btnHtml = getActionBtns(a);
+        return `
       <div class="appt-row">
         <div style="font-size:13px;font-weight:600">${dateStr}</div>
         <div style="font-size:14px;font-weight:700;color:var(--purple-lighter)">${timeStr}</div>
@@ -200,7 +259,7 @@ function renderTable() {
             </div>
           </div>
           ${a.note ? `<div style="font-size:11px;color:var(--text-secondary);margin-top:4px;padding-left:40px">📝 ${a.note}</div>` : ''}
-          ${a.medicalNote ? `<div style="font-size:11px;color:var(--teal);margin-top:4px;padding-left:40px">🏥 ${String(a.medicalNote).slice(0,60)}${a.medicalNote.length>60?'...':''}</div>` : ''}
+          ${a.medicalNote ? `<div style="font-size:11px;color:var(--teal);margin-top:4px;padding-left:40px">🏥 ${String(a.medicalNote).slice(0, 60)}${a.medicalNote.length > 60 ? '...' : ''}</div>` : ''}
         </div>
         <div>
           <div style="font-size:13px;font-weight:500">${a.serviceIcon || '✨'} ${a.serviceName || '—'}</div>
@@ -221,93 +280,94 @@ function renderTable() {
         </div>
       ` : ''}
     `;
-  }).join('');
-}
+      }).join('');
+    }
 
-function getActionBtns(a) {
-  const btns = [];
-  if (a.status === 'pending')
-    btns.push(`<button class="btn btn-sm btn-outline" style="font-size:11px;padding:4px 10px" onclick="updateStatus('${a.id}','confirmed')">✓ Xác Nhận</button>`);
-  if (a.status === 'confirmed')
-    btns.push(`<button class="btn btn-sm btn-primary" style="font-size:11px;padding:4px 10px" onclick="updateStatus('${a.id}','in-progress')">▶ Bắt Đầu</button>`);
-  if (a.status === 'in-progress')
-    btns.push(`<button class="btn btn-sm" style="font-size:11px;padding:4px 10px;background:var(--teal);color:#fff" onclick="updateStatus('${a.id}','completed')">✅ Xong</button>`);
-  if (a.status === 'completed')
-    btns.push(`<button class="btn btn-sm btn-ghost" style="font-size:11px;padding:4px 10px" onclick="openNoteModal('${a.id}')">📋 Ghi Chú</button>`);
-  return btns.join('');
-}
+    function getActionBtns(a) {
+      const btns = [];
+      if (a.status === 'pending')
+        btns.push(`<button class="btn btn-sm btn-outline" style="font-size:11px;padding:4px 10px" onclick="updateStatus('${a.id}','confirmed')">✓ Xác Nhận</button>`);
+      if (a.status === 'confirmed')
+        btns.push(`<button class="btn btn-sm btn-primary" style="font-size:11px;padding:4px 10px" onclick="updateStatus('${a.id}','in-progress')">▶ Bắt Đầu</button>`);
+      if (a.status === 'in-progress')
+        btns.push(`<button class="btn btn-sm" style="font-size:11px;padding:4px 10px;background:var(--teal);color:#fff" onclick="updateStatus('${a.id}','completed')">✅ Xong</button>`);
+      if (a.status === 'completed')
+        btns.push(`<button class="btn btn-sm btn-ghost" style="font-size:11px;padding:4px 10px" onclick="openNoteModal('${a.id}')">📋 Ghi Chú</button>`);
+      return btns.join('');
+    }
 
-// ─── Load ─────────────────────────────────────────────────
-async function loadAppts() {
-  try {
-    allAppts = await API.getAppointments();
-    const today = Fmt.toYYYYMMDD(new Date());
+    // ─── Load ─────────────────────────────────────────────────
+    async function loadAppts() {
+      try {
+        allAppts = await API.getAppointments();
+        const today = Fmt.toYYYYMMDD(new Date());
 
-    // Stats
-    document.getElementById('s-total').textContent   = allAppts.length;
-    document.getElementById('s-pending').textContent = allAppts.filter(a => a.status === 'pending').length;
-    document.getElementById('s-today').textContent   = allAppts.filter(a => Fmt.toYYYYMMDD(a.date) === today).length;
-    document.getElementById('s-done').textContent    = allAppts.filter(a => a.status === 'completed').length;
+        // Stats
+        document.getElementById('s-total').textContent = allAppts.length;
+        document.getElementById('s-pending').textContent = allAppts.filter(a => a.status === 'pending').length;
+        document.getElementById('s-today').textContent = allAppts.filter(a => Fmt.toYYYYMMDD(a.date) === today).length;
+        document.getElementById('s-done').textContent = allAppts.filter(a => a.status === 'completed').length;
 
-    renderTable();
-  } catch(e) {
-    Toast.error('Lỗi tải dữ liệu: ' + e.message);
-  }
-}
+        renderTable();
+      } catch (e) {
+        Toast.error('Lỗi tải dữ liệu: ' + e.message);
+      }
+    }
 
-// ─── Actions ──────────────────────────────────────────────
-async function updateStatus(id, status) {
-  try {
-    await API.updateApptStatus(id, { status });
-    const idx = allAppts.findIndex(a => a.id === id);
-    if (idx >= 0) allAppts[idx].status = status;
-    renderTable();
-    Toast.success(`Đã cập nhật: ${Fmt.statusVi(status)}`);
-  } catch(e) { Toast.error(e.message); }
-}
+    // ─── Actions ──────────────────────────────────────────────
+    async function updateStatus(id, status) {
+      try {
+        await API.updateApptStatus(id, { status });
+        const idx = allAppts.findIndex(a => a.id === id);
+        if (idx >= 0) allAppts[idx].status = status;
+        renderTable();
+        Toast.success(`Đã cập nhật: ${Fmt.statusVi(status)}`);
+      } catch (e) { Toast.error(e.message); }
+    }
 
-async function cancelAppt(id) {
-  if (!confirm('Hủy lịch hẹn này?')) return;
-  await updateStatus(id, 'cancelled');
-}
+    async function cancelAppt(id) {
+      if (!confirm('Hủy lịch hẹn này?')) return;
+      await updateStatus(id, 'cancelled');
+    }
 
-function openNoteModal(id) {
-  const appt = allAppts.find(a => a.id === id);
-  if (!appt) return;
-  noteTarget = id;
-  document.getElementById('note-modal-customer').textContent = appt.customerName || 'Khách hàng';
-  document.getElementById('note-modal-service').textContent  = `${appt.serviceIcon || '✨'} ${appt.serviceName || ''} — ${Fmt.dateShort(appt.date)} ${String(appt.time||'').slice(0,5)}`;
-  document.getElementById('note-content').value = appt.medicalNote || '';
-  document.getElementById('note-modal').classList.add('open');
-}
+    function openNoteModal(id) {
+      const appt = allAppts.find(a => a.id === id);
+      if (!appt) return;
+      noteTarget = id;
+      document.getElementById('note-modal-customer').textContent = appt.customerName || 'Khách hàng';
+      document.getElementById('note-modal-service').textContent = `${appt.serviceIcon || '✨'} ${appt.serviceName || ''} — ${Fmt.dateShort(appt.date)} ${String(appt.time || '').slice(0, 5)}`;
+      document.getElementById('note-content').value = appt.medicalNote || '';
+      document.getElementById('note-modal').classList.add('open');
+    }
 
-async function saveNote() {
-  const note = document.getElementById('note-content').value.trim();
-  if (!note) { Toast.warning('Vui lòng nhập ghi chú'); return; }
-  try {
-    await API.updateApptStatus(noteTarget, { status: 'completed', medicalNote: note });
-    const idx = allAppts.findIndex(a => a.id === noteTarget);
-    if (idx >= 0) allAppts[idx].medicalNote = note;
-    document.getElementById('note-modal').classList.remove('open');
-    renderTable();
-    Toast.success('Đã lưu ghi chú y tế');
-  } catch(e) { Toast.error(e.message); }
-}
+    async function saveNote() {
+      const note = document.getElementById('note-content').value.trim();
+      if (!note) { Toast.warning('Vui lòng nhập ghi chú'); return; }
+      try {
+        await API.updateApptStatus(noteTarget, { status: 'completed', medicalNote: note });
+        const idx = allAppts.findIndex(a => a.id === noteTarget);
+        if (idx >= 0) allAppts[idx].medicalNote = note;
+        document.getElementById('note-modal').classList.remove('open');
+        renderTable();
+        Toast.success('Đã lưu ghi chú y tế');
+      } catch (e) { Toast.error(e.message); }
+    }
 
-async function saveQuickNote(id) {
-  const note = document.getElementById(`quick-note-${id}`)?.value.trim();
-  if (!note) { Toast.warning('Nhập ghi chú trước'); return; }
-  noteTarget = id;
-  document.getElementById('note-content').value = note;
-  await saveNote();
-}
+    async function saveQuickNote(id) {
+      const note = document.getElementById(`quick-note-${id}`)?.value.trim();
+      if (!note) { Toast.warning('Nhập ghi chú trước'); return; }
+      noteTarget = id;
+      document.getElementById('note-content').value = note;
+      await saveNote();
+    }
 
-// ─── Update status API ────────────────────────────────────
-// Extend API to support medicalNote in status update
-const _origUpdateApptStatus = API.updateApptStatus.bind(API);
-API.updateApptStatus = (id, body) => API.patch(`/appointments/${id}/status`, body);
+    // ─── Update status API ────────────────────────────────────
+    // Extend API to support medicalNote in status update
+    const _origUpdateApptStatus = API.updateApptStatus.bind(API);
+    API.updateApptStatus = (id, body) => API.patch(`/appointments/${id}/status`, body);
 
-loadAppts();
-</script>
+    loadAppts();
+  </script>
 </body>
+
 </html>
