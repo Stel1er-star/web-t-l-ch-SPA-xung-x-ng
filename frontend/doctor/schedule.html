@@ -197,6 +197,7 @@
           <div id="week-range" style="font-size:14px;font-weight:600;color:var(--text-primary);min-width:180px;text-align:center"></div>
           <button class="nav-week-btn" id="next-week">Tuần sau →</button>
           <button class="nav-week-btn" id="this-week" style="border-color:rgba(124,58,237,0.4);color:var(--purple-lighter)">Tuần này</button>
+          <button class="btn btn-primary btn-sm" onclick="openSwapModal()">🔄 Đổi Ca / Trực Hộ</button>
         </div>
       </div>
 
@@ -218,6 +219,44 @@
           <div style="color:var(--text-muted);padding:24px;text-align:center;grid-column:1/-1">Đang tải...</div>
         </div>
       </div>
+      
+      <!-- ── Quản Lý Đổi Ca / Trực Hộ ── -->
+      <div class="card" style="margin-bottom:28px">
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:14px">
+          <div>
+            <div class="card-title">🔄 Yêu Cầu Đổi Ca & Trực Hộ</div>
+            <span style="font-size:13px;color:var(--text-muted)">Gửi và nhận các yêu cầu đổi ca trực hoặc trực hộ từ đồng nghiệp</span>
+          </div>
+        </div>
+        
+        <!-- Tabs -->
+        <div style="display:flex;gap:12px;margin:16px 0;border-bottom:1px solid var(--border);padding-bottom:10px">
+          <button class="filter-tab active" id="tab-received" onclick="switchSwapTab('received')">
+            📥 Nhận Được <span class="badge badge-pending" id="badge-received-count" style="display:none;margin-left:4px;padding:2px 6px">0</span>
+          </button>
+          <button class="filter-tab" id="tab-sent" onclick="switchSwapTab('sent')">📤 Đã Gửi</button>
+        </div>
+
+        <div class="table-wrapper" style="margin-top:10px">
+          <table class="table" style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border)">
+                <th style="text-align:left;padding:12px 8px;font-size:12px;color:var(--text-muted)">Đồng Nghiệp</th>
+                <th style="text-align:left;padding:12px 8px;font-size:12px;color:var(--text-muted)">Ca Đổi (Ngày/Giờ)</th>
+                <th style="text-align:left;padding:12px 8px;font-size:12px;color:var(--text-muted)">Hình Thức</th>
+                <th style="text-align:left;padding:12px 8px;font-size:12px;color:var(--text-muted)">Lý Do</th>
+                <th style="text-align:left;padding:12px 8px;font-size:12px;color:var(--text-muted)">Trạng Thái</th>
+                <th style="text-align:right;padding:12px 8px;font-size:12px;color:var(--text-muted)">Hành Động</th>
+              </tr>
+            </thead>
+            <tbody id="swap-requests-tbody">
+              <tr>
+                <td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px">Đang tải danh sách yêu cầu...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
 
       <!-- ── Weekly calendar view ── -->
       <div class="card" style="padding:0;overflow:hidden">
@@ -236,6 +275,77 @@
       </div>
     </div>
   </main>
+</div>
+
+<!-- Shift Swap Modal -->
+<div class="modal-overlay" id="swap-modal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-title">Yêu Cầu Đổi Ca / Trực Hộ</div>
+      <button class="modal-close" onclick="closeSwapModal()">✕</button>
+    </div>
+    <form id="swap-form" style="display:flex;flex-direction:column;gap:14px">
+      <!-- 1. Ngày bận & Ca bận -->
+      <div class="form-group">
+        <label class="form-label">Chọn ngày bạn bận *</label>
+        <input type="date" class="form-input" id="swap-date" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Chọn ca trực bận *</label>
+        <select class="form-select" id="swap-shift" required disabled>
+          <option value="">-- Chọn ngày trước --</option>
+        </select>
+        <div id="swap-shift-warning" style="color:var(--gold);font-size:12px;margin-top:4px;display:none"></div>
+      </div>
+
+      <!-- 2. Bác sĩ trực thay -->
+      <div class="form-group">
+        <label class="form-label">Chọn đồng nghiệp trực thay *</label>
+        <select class="form-select" id="swap-target-doctor" required>
+          <option value="">-- Chọn bác sĩ/KTV --</option>
+        </select>
+      </div>
+
+      <!-- 3. Kiểu đổi ca -->
+      <div class="form-group">
+        <label class="form-label">Hình thức đổi *</label>
+        <div style="display:flex;gap:16px;margin-top:4px">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="radio" name="swap-type" value="cover" checked> Trực hộ (1 chiều)
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+            <input type="radio" name="swap-type" value="mutual"> Đổi ca chéo (2 chiều)
+          </label>
+        </div>
+      </div>
+
+      <!-- 4. Ca làm bù (ẩn nếu là trực hộ) -->
+      <div id="mutual-swap-section" style="display:none;background:rgba(255,255,255,0.02);padding:12px;border-radius:6px;border:1px solid var(--border)">
+        <div class="form-group" style="margin-bottom:10px">
+          <label class="form-label">Ngày bạn muốn làm bù *</label>
+          <input type="date" class="form-input" id="swap-target-date">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Chọn ca của đồng nghiệp muốn đổi *</label>
+          <select class="form-select" id="swap-target-shift">
+            <option value="">-- Chọn ngày bù trước --</option>
+          </select>
+          <div id="swap-target-shift-warning" style="color:var(--gold);font-size:12px;margin-top:4px;display:none"></div>
+        </div>
+      </div>
+
+      <!-- 5. Lý do bận -->
+      <div class="form-group">
+        <label class="form-label">Lý do bận *</label>
+        <textarea class="form-input" id="swap-reason" rows="2" placeholder="Ví dụ: Bận việc gia đình, đi học..." required></textarea>
+      </div>
+
+      <div class="modal-footer" style="margin-top:8px">
+        <button type="button" class="btn btn-ghost" onclick="closeSwapModal()">Hủy</button>
+        <button type="submit" class="btn btn-primary" id="swap-submit-btn">📤 Gửi Yêu Cầu</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <script src="../js/api.js"></script>
@@ -437,33 +547,361 @@ function updateStats() {
 }
 
 // ── Load data ─────────────────────────────────────────────
+let swapRequests = [];
+let doctors = [];
+let activeSwapTab = 'received';
+
 async function loadAll() {
   try {
-    [myShifts, myAppts] = await Promise.all([
+    [myShifts, myAppts, swapRequests, doctors] = await Promise.all([
       API.getStaffShifts(user.id).catch(() => []),
       API.getAppointments().catch(() => []),
+      API.getShiftSwaps().catch(() => []),
+      API.getDoctors().catch(() => []),
     ]);
     renderShiftCards();
     updateWeekRange();
     renderCalendar();
     updateStats();
+    renderSwapRequests();
+    populateDoctorSelect();
   } catch(e) {
     Toast.error('Lỗi tải dữ liệu: ' + e.message);
   }
 }
 
+// ── Shift Swapping Logic ──────────────────────────────────
+function getDayVi(dayName) {
+  const map = { Mon: 'Hai', Tue: 'Ba', Wed: 'Tư', Thu: 'Năm', Fri: 'Sáu', Sat: 'Bảy', Sun: 'Chủ Nhật' };
+  return map[dayName] || dayName;
+}
+
+function openSwapModal() {
+  const form = document.getElementById('swap-form');
+  if (form) form.reset();
+  const select = document.getElementById('swap-shift');
+  if (select) select.disabled = true;
+  const warning = document.getElementById('swap-shift-warning');
+  if (warning) warning.style.display = 'none';
+  
+  const sec = document.getElementById('mutual-swap-section');
+  if (sec) sec.style.display = 'none';
+  const tgtDate = document.getElementById('swap-target-date');
+  if (tgtDate) { tgtDate.required = false; tgtDate.value = ''; }
+  const tgtShift = document.getElementById('swap-target-shift');
+  if (tgtShift) {
+    tgtShift.required = false;
+    tgtShift.disabled = true;
+    tgtShift.innerHTML = '<option value="">-- Chọn ngày bù trước --</option>';
+  }
+  const tgtShiftWarning = document.getElementById('swap-target-shift-warning');
+  if (tgtShiftWarning) tgtShiftWarning.style.display = 'none';
+  
+  const swapModal = document.getElementById('swap-modal');
+  if (swapModal) swapModal.classList.add('open');
+}
+
+function closeSwapModal() {
+  const swapModal = document.getElementById('swap-modal');
+  if (swapModal) swapModal.classList.remove('open');
+}
+
+function switchSwapTab(tab) {
+  activeSwapTab = tab;
+  const tabReceived = document.getElementById('tab-received');
+  const tabSent = document.getElementById('tab-sent');
+  if (tabReceived) tabReceived.classList.toggle('active', tab === 'received');
+  if (tabSent) tabSent.classList.toggle('active', tab === 'sent');
+  renderSwapRequests();
+}
+
+function populateDoctorSelect() {
+  const select = document.getElementById('swap-target-doctor');
+  if (!select) return;
+  select.innerHTML = '<option value="">-- Chọn bác sĩ/KTV --</option>';
+  
+  const others = doctors.filter(d => d.id !== user.id);
+  others.forEach(d => {
+    const option = document.createElement('option');
+    option.value = d.id;
+    option.textContent = `${d.name} — ${d.specialty || 'Chuyên gia'}`;
+    select.appendChild(option);
+  });
+}
+
+let colleagueShifts = [];
+async function updateColleagueShifts() {
+  const doctorSelect = document.getElementById('swap-target-doctor');
+  const targetDateInput = document.getElementById('swap-target-date');
+  const select = document.getElementById('swap-target-shift');
+  const warning = document.getElementById('swap-target-shift-warning');
+  
+  if (!doctorSelect || !targetDateInput || !select || !warning) return;
+  
+  const docId = doctorSelect.value;
+  const targetDateStr = targetDateInput.value;
+  
+  select.innerHTML = '<option value="">-- Chọn ca trực của đồng nghiệp --</option>';
+  warning.style.display = 'none';
+
+  if (!docId || !targetDateStr) {
+    select.disabled = true;
+    return;
+  }
+
+  try {
+    colleagueShifts = await API.getStaffShifts(docId);
+    
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const dayName = days[new Date(targetDateStr).getDay()];
+    const filtered = colleagueShifts.filter(s => s.day === dayName);
+    
+    if (filtered.length === 0) {
+      select.disabled = true;
+      const docName = doctorSelect.options[doctorSelect.selectedIndex].text;
+      warning.textContent = `${docName.split(' — ')[0]} không có ca trực cố định nào vào thứ ${getDayVi(dayName)}.`;
+      warning.style.display = 'block';
+    } else {
+      select.disabled = false;
+      filtered.forEach(s => {
+        const option = document.createElement('option');
+        option.value = s.id;
+        option.textContent = `${s.startTime.slice(0,5)} - ${s.endTime.slice(0,5)}`;
+        select.appendChild(option);
+      });
+    }
+  } catch (err) {
+    Toast.error('Không thể lấy lịch của đồng nghiệp: ' + err.message);
+  }
+}
+
+function initSwapEvents() {
+  const swapDateEl = document.getElementById('swap-date');
+  if (swapDateEl) {
+    swapDateEl.addEventListener('change', (e) => {
+      const dateStr = e.target.value;
+      const select = document.getElementById('swap-shift');
+      const warning = document.getElementById('swap-shift-warning');
+      if (!select || !warning) return;
+      
+      select.innerHTML = '<option value="">-- Chọn ca trực --</option>';
+      warning.style.display = 'none';
+
+      if (!dateStr) {
+        select.disabled = true;
+        return;
+      }
+
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const dayName = days[new Date(dateStr).getDay()];
+      const dayShifts = myShifts.filter(s => s.day === dayName);
+
+      if (dayShifts.length === 0) {
+        select.disabled = true;
+        warning.textContent = `Bạn không có ca trực cố định nào vào thứ ${getDayVi(dayName)}.`;
+        warning.style.display = 'block';
+      } else {
+        select.disabled = false;
+        dayShifts.forEach(s => {
+          const option = document.createElement('option');
+          option.value = s.id;
+          option.textContent = `${s.startTime.slice(0,5)} - ${s.endTime.slice(0,5)}`;
+          select.appendChild(option);
+        });
+      }
+    });
+  }
+
+  const targetDocEl = document.getElementById('swap-target-doctor');
+  if (targetDocEl) targetDocEl.addEventListener('change', updateColleagueShifts);
+
+  const targetDateEl = document.getElementById('swap-target-date');
+  if (targetDateEl) targetDateEl.addEventListener('change', updateColleagueShifts);
+
+  document.querySelectorAll('input[name="swap-type"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+      const sec = document.getElementById('mutual-swap-section');
+      const tgtDate = document.getElementById('swap-target-date');
+      const tgtShift = document.getElementById('swap-target-shift');
+      if (!sec || !tgtDate || !tgtShift) return;
+      
+      if (e.target.value === 'mutual') {
+        sec.style.display = 'block';
+        tgtDate.required = true;
+        tgtShift.required = true;
+      } else {
+        sec.style.display = 'none';
+        tgtDate.required = false;
+        tgtShift.required = false;
+        tgtDate.value = '';
+        tgtShift.innerHTML = '<option value="">-- Chọn ngày bù trước --</option>';
+        tgtShift.disabled = true;
+      }
+    });
+  });
+
+  const swapFormEl = document.getElementById('swap-form');
+  if (swapFormEl) {
+    swapFormEl.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const targetDoctorSelect = document.getElementById('swap-target-doctor');
+      const swapDateInput = document.getElementById('swap-date');
+      const swapShiftSelect = document.getElementById('swap-shift');
+      const swapReasonText = document.getElementById('swap-reason');
+      
+      if (!targetDoctorSelect || !swapDateInput || !swapShiftSelect || !swapReasonText) return;
+      
+      const body = {
+        targetId: targetDoctorSelect.value,
+        date: swapDateInput.value,
+        shiftId: swapShiftSelect.value,
+        reason: swapReasonText.value
+      };
+
+      const typeEl = document.querySelector('input[name="swap-type"]:checked');
+      const type = typeEl ? typeEl.value : 'cover';
+      
+      if (type === 'mutual') {
+        const targetDateInput = document.getElementById('swap-target-date');
+        const targetShiftSelect = document.getElementById('swap-target-shift');
+        if (targetDateInput && targetShiftSelect) {
+          body.targetDate = targetDateInput.value;
+          body.targetShiftId = targetShiftSelect.value;
+        }
+      }
+
+      try {
+        await API.createShiftSwap(body);
+        Toast.success('Đã gửi yêu cầu đổi ca. Chờ đồng nghiệp phản hồi.');
+        closeSwapModal();
+        loadAll();
+      } catch (err) {
+        Toast.error(err.message);
+      }
+    });
+  }
+}
+
+function renderSwapRequests() {
+  const tbody = document.getElementById('swap-requests-tbody');
+  if (!tbody) return;
+  const user = Auth.getUser();
+
+  const filtered = swapRequests.filter(r => {
+    if (activeSwapTab === 'received') {
+      return r.targetId === user.id;
+    } else {
+      return r.requesterId === user.id;
+    }
+  });
+
+  const pendingReceivedCount = swapRequests.filter(r => r.targetId === user.id && r.status === 'pending').length;
+  const badge = document.getElementById('badge-received-count');
+  if (badge) {
+    if (pendingReceivedCount > 0) {
+      badge.textContent = pendingReceivedCount;
+      badge.style.display = 'inline-block';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px">Không có yêu cầu nào</td></tr>`;
+    return;
+  }
+
+  const statusLabel = {
+    pending: '<span class="badge badge-pending">Chờ đồng nghiệp phản hồi</span>',
+    accepted: '<span class="badge badge-confirmed">Đồng nghiệp đồng ý (Chờ duyệt)</span>',
+    rejected: '<span class="badge badge-cancelled">Đồng nghiệp từ chối</span>',
+    approved: '<span class="badge badge-completed">Đã phê duyệt</span>',
+    declined: '<span class="badge badge-cancelled">Admin từ chối</span>'
+  };
+
+  tbody.innerHTML = filtered.map(r => {
+    const isReceived = activeSwapTab === 'received';
+    const otherDoctorName = isReceived ? r.requesterName : r.targetName;
+    const dateFormatted = new Date(r.date).toLocaleDateString('vi-VN');
+    const shiftTime = `${r.shiftStartTime.slice(0,5)} - ${r.shiftEndTime.slice(0,5)}`;
+
+    let typeText = '';
+    if (r.targetDate && r.targetShiftId) {
+      const tgtDateFormatted = new Date(r.targetDate).toLocaleDateString('vi-VN');
+      const tgtShiftTime = `${r.targetShiftStartTime.slice(0,5)} - ${r.targetShiftEndTime.slice(0,5)}`;
+      typeText = `🔄 Đổi ca chéo:<br><small>Bù ngày ${tgtDateFormatted} (${tgtShiftTime})</small>`;
+    } else {
+      typeText = '🙋 Trực hộ';
+    }
+
+    let actionsHtml = '—';
+    if (isReceived && r.status === 'pending') {
+      actionsHtml = `
+        <div style="display:flex;gap:6px;justify-content:flex-end">
+          <button class="btn btn-success btn-sm" onclick="handleSwapAction('${r.id}', 'accepted')">Đồng ý</button>
+          <button class="btn btn-danger btn-sm" onclick="handleSwapAction('${r.id}', 'rejected')">Từ chối</button>
+        </div>
+      `;
+    }
+
+    return `
+      <tr>
+        <td style="padding:12px 8px">
+          <div style="font-weight:600;font-size:14px">${otherDoctorName}</div>
+          <div style="font-size:12px;color:var(--text-muted)">${isReceived ? 'Người gửi' : 'Người nhận'}</div>
+        </td>
+        <td style="padding:12px 8px">
+          <div style="font-weight:600">${dateFormatted}</div>
+          <div style="font-size:12px;color:var(--text-secondary)">🕐 Ca: ${shiftTime}</div>
+        </td>
+        <td style="padding:12px 8px;font-size:13px">${typeText}</td>
+        <td style="padding:12px 8px;font-size:13px;max-width:200px;word-wrap:break-word">${r.reason || '—'}</td>
+        <td style="padding:12px 8px">${statusLabel[r.status] || r.status}</td>
+        <td style="padding:12px 8px;text-align:right">${actionsHtml}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+async function handleSwapAction(id, action) {
+  const actText = action === 'accepted' ? 'chấp nhận trực hộ' : 'từ chối yêu cầu';
+  if (!confirm(`Bạn có chắc chắn muốn ${actText}?`)) return;
+
+  try {
+    await API.updateShiftSwapStatus(id, { status: action });
+    Toast.success('Cập nhật trạng thái thành công');
+    loadAll();
+  } catch (err) {
+    Toast.error('Không thể cập nhật: ' + err.message);
+  }
+}
+
+window.openSwapModal = openSwapModal;
+window.closeSwapModal = closeSwapModal;
+window.switchSwapTab = switchSwapTab;
+window.handleSwapAction = handleSwapAction;
+
 // ── Navigation ────────────────────────────────────────────
-document.getElementById('prev-week').addEventListener('click', () => {
+const prevWeekBtn = document.getElementById('prev-week');
+if (prevWeekBtn) prevWeekBtn.addEventListener('click', () => {
   weekOffset--; updateWeekRange(); renderCalendar(); updateStats();
 });
-document.getElementById('next-week').addEventListener('click', () => {
+
+const nextWeekBtn = document.getElementById('next-week');
+if (nextWeekBtn) nextWeekBtn.addEventListener('click', () => {
   weekOffset++; updateWeekRange(); renderCalendar(); updateStats();
 });
-document.getElementById('this-week').addEventListener('click', () => {
+
+const thisWeekBtn = document.getElementById('this-week');
+if (thisWeekBtn) thisWeekBtn.addEventListener('click', () => {
   weekOffset = 0; updateWeekRange(); renderCalendar(); updateStats();
 });
 
+// Run initialization
+initSwapEvents();
 loadAll();
 </script>
+
 </body>
 </html>

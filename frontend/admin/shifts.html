@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -226,6 +226,33 @@
       <div class="grid-4" style="margin-top:24px" id="summary-cards">
         <!-- Populated by JS -->
       </div>
+
+      <!-- ── Duyệt Đổi Ca & Trực Hộ ── -->
+      <div class="card" style="margin-top:28px">
+        <div class="card-header" style="border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:16px">
+          <div class="card-title">🔄 Phê Duyệt Đổi Ca / Trực Hộ</div>
+          <span style="font-size:13px;color:var(--text-muted)">Xem và duyệt các yêu cầu đổi ca trực giữa các bác sĩ</span>
+        </div>
+        <div class="table-wrapper">
+          <table class="table" style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border)">
+                <th style="text-align:left;padding:12px 8px;font-size:12px;color:var(--text-muted)">Bác Sĩ Yêu Cầu</th>
+                <th style="text-align:left;padding:12px 8px;font-size:12px;color:var(--text-muted)">Bác Sĩ Nhận</th>
+                <th style="text-align:left;padding:12px 8px;font-size:12px;color:var(--text-muted)">Chi Tiết Đổi Ca</th>
+                <th style="text-align:left;padding:12px 8px;font-size:12px;color:var(--text-muted)">Lý Do</th>
+                <th style="text-align:left;padding:12px 8px;font-size:12px;color:var(--text-muted)">Trạng Thái</th>
+                <th style="text-align:right;padding:12px 8px;font-size:12px;color:var(--text-muted)">Hành Động</th>
+              </tr>
+            </thead>
+            <tbody id="admin-swaps-tbody">
+              <tr>
+                <td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px">Đang tải danh sách yêu cầu...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </main>
 </div>
@@ -336,11 +363,14 @@ function renderGrid() {
   `;
 }
 
+let adminSwaps = [];
+
 async function loadAll() {
   try {
-    [allShifts, allStaff] = await Promise.all([
+    [allShifts, allStaff, adminSwaps] = await Promise.all([
       API.getShifts(),
-      API.getAdminUsers({ role: 'doctor' })
+      API.getAdminUsers({ role: 'doctor' }),
+      API.getShiftSwaps().catch(() => [])
     ]);
 
     // Populate staff filter tabs
@@ -363,8 +393,95 @@ async function loadAll() {
       allStaff.map(s => `<option value="${s.id}">${s.name} — ${s.specialty || 'Chuyên gia'}</option>`).join('');
 
     renderGrid();
+    renderAdminSwaps();
   } catch(e) { Toast.error('Lỗi tải dữ liệu: ' + e.message); }
 }
+
+function renderAdminSwaps() {
+  const tbody = document.getElementById('admin-swaps-tbody');
+  if (!adminSwaps || adminSwaps.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px">Không có yêu cầu đổi ca nào</td></tr>`;
+    return;
+  }
+
+  const statusLabel = {
+    pending: '<span class="badge badge-pending">Chờ đồng nghiệp phản hồi</span>',
+    accepted: '<span class="badge badge-warning" style="background:rgba(245,158,11,0.2);color:var(--gold)">Chờ Admin duyệt</span>',
+    rejected: '<span class="badge badge-cancelled">Đồng nghiệp từ chối</span>',
+    approved: '<span class="badge badge-completed">Đã phê duyệt</span>',
+    declined: '<span class="badge badge-cancelled">Admin từ chối</span>'
+  };
+
+  tbody.innerHTML = adminSwaps.map(r => {
+    const dateStr = new Date(r.date).toLocaleDateString('vi-VN');
+    const shiftTime = `${r.shiftStartTime.slice(0,5)}–${r.shiftEndTime.slice(0,5)}`;
+    
+    let detailsHtml = `
+      <div><strong>Ngày bận:</strong> ${dateStr}</div>
+      <div style="font-size:12px;color:var(--text-muted)">Ca: ${shiftTime} (Thứ ${getDayVi(r.shiftDay)})</div>
+    `;
+
+    if (r.targetDate && r.targetShiftId) {
+      const tgtDateStr = new Date(r.targetDate).toLocaleDateString('vi-VN');
+      const tgtShiftTime = `${r.targetShiftStartTime.slice(0,5)}–${r.targetShiftEndTime.slice(0,5)}`;
+      detailsHtml += `
+        <div style="margin-top:4px;padding-top:4px;border-top:1px dashed var(--border)">
+          <strong>Đổi ca chéo ngày:</strong> ${tgtDateStr}
+          <div style="font-size:12px;color:var(--text-muted)">Ca: ${tgtShiftTime} (Thứ ${getDayVi(r.targetShiftDay)})</div>
+        </div>
+      `;
+    } else {
+      detailsHtml += `<div style="font-size:12px;color:var(--purple-light)">↳ Chỉ nhờ trực hộ</div>`;
+    }
+
+    let actionsHtml = '—';
+    if (r.status === 'accepted') {
+      actionsHtml = `
+        <div style="display:flex;gap:6px;justify-content:flex-end">
+          <button class="btn btn-success btn-sm" onclick="handleAdminSwapDecision('${r.id}', 'approved')">Duyệt</button>
+          <button class="btn btn-danger btn-sm" onclick="handleAdminSwapDecision('${r.id}', 'declined')">Từ chối</button>
+        </div>
+      `;
+    }
+
+    return `
+      <tr>
+        <td style="padding:12px 8px">
+          <div style="font-weight:600;font-size:14px">${r.requesterName}</div>
+          <div style="font-size:12px;color:var(--text-muted)">${r.requesterSpecialty || 'Bác sĩ'}</div>
+        </td>
+        <td style="padding:12px 8px">
+          <div style="font-weight:600;font-size:14px">${r.targetName}</div>
+          <div style="font-size:12px;color:var(--text-muted)">${r.targetSpecialty || 'Bác sĩ'}</div>
+        </td>
+        <td style="padding:12px 8px;font-size:13px">${detailsHtml}</td>
+        <td style="padding:12px 8px;font-size:13px;max-width:200px;word-wrap:break-word">${r.reason || '—'}</td>
+        <td style="padding:12px 8px">${statusLabel[r.status] || r.status}</td>
+        <td style="padding:12px 8px;text-align:right">${actionsHtml}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+async function handleAdminSwapDecision(id, decision) {
+  const text = decision === 'approved' ? 'phê duyệt' : 'từ chối';
+  if (!confirm(`Bạn có chắc chắn muốn ${text} yêu cầu đổi ca này?`)) return;
+
+  try {
+    await API.updateShiftSwapStatus(id, { status: decision });
+    Toast.success('Cập nhật trạng thái thành công');
+    loadAll();
+  } catch (err) {
+    Toast.error('Không thể cập nhật: ' + err.message);
+  }
+}
+
+function getDayVi(dayName) {
+  const map = { Mon: '2', Tue: '3', Wed: '4', Thu: '5', Fri: '6', Sat: '7', Sun: 'CN' };
+  return map[dayName] || dayName;
+}
+
+window.handleAdminSwapDecision = handleAdminSwapDecision;
 
 // ─── Modal: Add ───────────────────────────────────────────
 function openAddModal(staffId = '', day = '') {

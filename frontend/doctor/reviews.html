@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Đánh Giá Của Tôi — SpaProMax</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/global.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <style>
+    .review-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      margin-bottom: 16px;
+      transition: all 0.3s ease;
+    }
+    .review-card:hover {
+      border-color: rgba(124,58,237,0.4);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-card);
+    }
+    .star-display { color: var(--gold); font-size: 16px; letter-spacing: 2px; }
+    .rating-bar-track {
+      flex: 1; height: 8px; background: rgba(255,255,255,0.06);
+      border-radius: 4px; overflow: hidden;
+    }
+    .rating-bar-fill {
+      height: 100%; border-radius: 4px;
+      background: linear-gradient(90deg, var(--purple), var(--teal));
+      transition: width 0.6s ease;
+    }
+    .reply-box {
+      margin-top: 14px; padding: 14px 16px;
+      background: rgba(124,58,237,0.06);
+      border-left: 3px solid var(--purple);
+      border-radius: 0 10px 10px 0;
+    }
+    .reply-box .reply-label {
+      font-size: 12px; font-weight: 700;
+      color: var(--purple-lighter); margin-bottom: 6px;
+    }
+    .reply-box .reply-text {
+      font-size: 13px; color: var(--text-secondary); line-height: 1.5;
+    }
+    .tag-chip {
+      font-size: 11px; background: rgba(124,58,237,0.12);
+      padding: 2px 10px; border-radius: 12px;
+      color: var(--purple-lighter); border: 1px solid rgba(124,58,237,0.2);
+    }
+  </style>
+</head>
+<body>
+<div id="toast-container"></div>
+
+<!-- Reply Modal -->
+<div class="modal-overlay" id="reply-modal">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-header">
+      <div class="modal-title">💬 Phản Hồi Đánh Giá</div>
+      <button class="modal-close" onclick="closeReplyModal()">✕</button>
+    </div>
+    <div style="margin-bottom:16px;padding:14px;background:var(--glass-bg);border-radius:var(--radius);border:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <img id="reply-customer-img" src="" style="width:36px;height:36px;border-radius:50%;object-fit:cover">
+        <div>
+          <div style="font-weight:600;font-size:14px" id="reply-customer-name">—</div>
+          <div style="font-size:12px;color:var(--text-muted)" id="reply-service-name">—</div>
+        </div>
+      </div>
+      <div class="star-display" id="reply-stars"></div>
+      <div style="font-size:13px;color:var(--text-secondary);margin-top:6px" id="reply-comment">—</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Phản hồi của bạn</label>
+      <textarea class="form-input form-textarea" id="reply-text" rows="4" placeholder="Cảm ơn bạn đã đánh giá! Chúng tôi rất vui..."></textarea>
+    </div>
+    <div class="modal-footer" style="margin-top:12px">
+      <button class="btn btn-ghost" onclick="closeReplyModal()">Hủy</button>
+      <button class="btn btn-primary" id="submit-reply-btn">💬 Gửi Phản Hồi</button>
+    </div>
+  </div>
+</div>
+
+<div class="main-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo"><div class="sidebar-logo-icon">🌿</div><span class="sidebar-logo-text">SpaProMax</span></div>
+    <nav class="sidebar-nav">
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Làm Việc</div>
+        <a href="dashboard.html" class="sidebar-link"><span class="sidebar-link-icon">📊</span> Tổng Quan</a>
+        <a href="appointments.html" class="sidebar-link"><span class="sidebar-link-icon">🗓️</span> Lịch Hẹn</a>
+        <a href="schedule.html" class="sidebar-link"><span class="sidebar-link-icon">🕐</span> Lịch Làm Việc</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-title">Của Tôi</div>
+        <a href="reviews.html" class="sidebar-link active"><span class="sidebar-link-icon">⭐</span> Đánh Giá</a>
+        <a href="profile.html" class="sidebar-link"><span class="sidebar-link-icon">👤</span> Hồ Sơ</a>
+      </div>
+      <div class="sidebar-section">
+        <a href="../index.html" class="sidebar-link"><span class="sidebar-link-icon">🌐</span> Trang Chủ</a>
+        <a class="sidebar-link" data-action="logout"><span class="sidebar-link-icon">🚪</span> Đăng Xuất</a>
+      </div>
+    </nav>
+    <div class="sidebar-user">
+      <img id="sidebar-user-avatar" src="" class="sidebar-user-avatar">
+      <div><div class="sidebar-user-name" id="sidebar-user-name">—</div><div class="sidebar-user-role" id="sidebar-user-role">Bác sĩ / KTV</div></div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <div class="topbar">
+      <div style="font-size:14px;color:var(--text-secondary)">Bác Sĩ / Đánh Giá</div>
+      <div class="topbar-actions">
+        <select id="filter-rating" class="form-select" style="width:auto;padding:6px 12px;font-size:13px;height:34px;border-radius:var(--radius-full)">
+          <option value="">⭐ Tất cả sao</option>
+          <option value="5">5 Sao</option>
+          <option value="4">4 Sao</option>
+          <option value="3">3 Sao</option>
+          <option value="2">2 Sao</option>
+          <option value="1">1 Sao</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="loadReviews()">🔄 Làm Mới</button>
+      </div>
+    </div>
+
+    <div class="page-container" style="max-width:900px">
+      <h1 class="page-title font-heading">Đánh Giá Của Tôi ⭐</h1>
+      <p class="page-subtitle">Xem và phản hồi đánh giá từ khách hàng</p>
+
+      <!-- Stats Summary -->
+      <div class="grid-4" style="margin-bottom:28px" id="review-stats">
+        <div class="stat-card gold"><div class="stat-icon gold">⭐</div><div><div class="stat-label">Điểm Trung Bình</div><div class="stat-value" id="avg-rating">—</div></div></div>
+        <div class="stat-card purple"><div class="stat-icon purple">📊</div><div><div class="stat-label">Tổng Đánh Giá</div><div class="stat-value" id="total-reviews">—</div></div></div>
+        <div class="stat-card emerald"><div class="stat-icon emerald">💬</div><div><div class="stat-label">Đã Phản Hồi</div><div class="stat-value" id="replied-count">—</div></div></div>
+        <div class="stat-card teal"><div class="stat-icon teal">⏳</div><div><div class="stat-label">Chưa Phản Hồi</div><div class="stat-value" id="unreplied-count">—</div></div></div>
+      </div>
+
+      <!-- Rating Distribution -->
+      <div class="card" style="margin-bottom:24px">
+        <div class="card-header">
+          <div class="card-title">Phân Bố Đánh Giá</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;padding:0 4px" id="rating-distribution">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Filter tabs -->
+      <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap">
+        <button class="filter-tab active" data-filter="all">Tất Cả</button>
+        <button class="filter-tab" data-filter="unreplied">⏳ Chưa Phản Hồi</button>
+        <button class="filter-tab" data-filter="replied">✅ Đã Phản Hồi</button>
+      </div>
+
+      <!-- Reviews List -->
+      <div id="reviews-list">
+        <div style="text-align:center;padding:48px;color:var(--text-muted)">Đang tải...</div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../js/api.js"></script>
+<script src="../js/auth.js"></script>
+<script>
+Auth.requireLogin('doctor');
+populateSidebarUser();
+const user = Auth.getUser();
+
+let allReviews = [], currentFilter = 'all', replyTargetId = null;
+
+// Filter tabs
+document.querySelectorAll('.filter-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    currentFilter = tab.dataset.filter;
+    renderReviews();
+  });
+});
+
+document.getElementById('filter-rating').addEventListener('change', renderReviews);
+
+function renderReviews() {
+  const ratingFilter = document.getElementById('filter-rating').value;
+  let filtered = allReviews;
+
+  if (ratingFilter) filtered = filtered.filter(r => r.rating == ratingFilter);
+  if (currentFilter === 'replied') filtered = filtered.filter(r => r.staffReply);
+  if (currentFilter === 'unreplied') filtered = filtered.filter(r => !r.staffReply);
+
+  const list = document.getElementById('reviews-list');
+  if (!filtered.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-state-icon">💬</div><div class="empty-state-title">Chưa có đánh giá nào</div><div class="empty-state-desc">Đánh giá sẽ xuất hiện khi khách hàng hoàn thành dịch vụ</div></div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(r => `
+    <div class="review-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+        <div style="display:flex;gap:12px;align-items:center">
+          <img src="${r.customerImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(r.customerName)}&background=7C3AED&color=fff&size=80`}"
+               style="width:44px;height:44px;border-radius:50%;object-fit:cover;border:2px solid var(--border)"
+               onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(r.customerName)}&background=7C3AED&color=fff'">
+          <div>
+            <div style="font-weight:600;font-size:15px">${r.customerName}</div>
+            <div style="font-size:12px;color:var(--text-muted)">
+              ${r.serviceName || 'Dịch vụ'} • ${Fmt.timeAgo(r.createdAt)}
+            </div>
+          </div>
+        </div>
+        <div class="star-display">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</div>
+      </div>
+
+      <div style="margin-top:12px;font-size:14px;color:var(--text-primary);line-height:1.6">
+        ${r.comment || '<span style="color:var(--text-muted);font-style:italic">Không có nhận xét.</span>'}
+      </div>
+
+      ${r.tags ? `<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap">
+        ${r.tags.split(',').map(tag => `<span class="tag-chip">#${tag.trim()}</span>`).join('')}
+      </div>` : ''}
+
+      ${r.staffReply ? `
+        <div class="reply-box">
+          <div class="reply-label">💬 Phản hồi của bạn:</div>
+          <div class="reply-text">${r.staffReply}</div>
+        </div>
+      ` : `
+        <div style="margin-top:14px">
+          <button class="btn btn-outline btn-sm" onclick="openReplyModal('${r.id}', '${encodeURIComponent(r.customerName)}', '${encodeURIComponent(r.customerImage || '')}', '${encodeURIComponent(r.serviceName || '')}', ${r.rating}, '${encodeURIComponent(r.comment || '')}')">
+            💬 Phản Hồi Đánh Giá
+          </button>
+        </div>
+      `}
+    </div>
+  `).join('');
+}
+
+function renderStats() {
+  const total = allReviews.length;
+  const avg = total ? (allReviews.reduce((s, r) => s + r.rating, 0) / total).toFixed(1) : '—';
+  const replied = allReviews.filter(r => r.staffReply).length;
+
+  document.getElementById('avg-rating').textContent = avg !== '—' ? avg + ' ⭐' : '—';
+  animateCount(document.getElementById('total-reviews'), total);
+  animateCount(document.getElementById('replied-count'), replied);
+  animateCount(document.getElementById('unreplied-count'), total - replied);
+
+  // Rating distribution
+  const dist = document.getElementById('rating-distribution');
+  const counts = [0, 0, 0, 0, 0];
+  allReviews.forEach(r => { if (r.rating >= 1 && r.rating <= 5) counts[r.rating - 1]++; });
+
+  dist.innerHTML = [5, 4, 3, 2, 1].map(star => {
+    const count = counts[star - 1];
+    const pct = total ? Math.round(count / total * 100) : 0;
+    return `
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="font-size:13px;font-weight:600;min-width:50px;color:var(--gold)">${star} ★</div>
+        <div class="rating-bar-track">
+          <div class="rating-bar-fill" style="width:${pct}%"></div>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted);min-width:60px;text-align:right">${count} (${pct}%)</div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function loadReviews() {
+  document.getElementById('reviews-list').innerHTML = `<div style="text-align:center;padding:48px;color:var(--text-muted)"><div class="loader-ring" style="margin:0 auto 16px"></div>Đang tải đánh giá...</div>`;
+  try {
+    allReviews = await API.getReviews({ staffId: user.id });
+    renderStats();
+    renderReviews();
+  } catch(e) {
+    Toast.error('Lỗi tải đánh giá: ' + e.message);
+  }
+}
+
+// Reply Modal
+function openReplyModal(id, customerName, customerImage, serviceName, rating, comment) {
+  replyTargetId = id;
+  document.getElementById('reply-customer-name').textContent = decodeURIComponent(customerName);
+  document.getElementById('reply-customer-img').src = decodeURIComponent(customerImage) || `https://ui-avatars.com/api/?name=${customerName}&background=7C3AED&color=fff`;
+  document.getElementById('reply-service-name').textContent = decodeURIComponent(serviceName);
+  document.getElementById('reply-stars').textContent = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+  document.getElementById('reply-comment').textContent = decodeURIComponent(comment) || 'Không có nhận xét';
+  document.getElementById('reply-text').value = '';
+  document.getElementById('reply-modal').classList.add('open');
+}
+
+function closeReplyModal() {
+  document.getElementById('reply-modal').classList.remove('open');
+}
+
+document.getElementById('submit-reply-btn').addEventListener('click', async () => {
+  const reply = document.getElementById('reply-text').value.trim();
+  if (!reply) { Toast.warning('Vui lòng nhập nội dung phản hồi!'); return; }
+
+  try {
+    await API.replyReview(replyTargetId, { staffReply: reply });
+    closeReplyModal();
+    Toast.success('Đã gửi phản hồi thành công! 💬');
+    loadReviews();
+  } catch(e) { Toast.error(e.message); }
+});
+
+loadReviews();
+</script>
+</body>
+</html>
