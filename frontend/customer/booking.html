@@ -96,11 +96,7 @@
         <div class="grid-3" id="svc-grid" style="gap:16px">
           <!-- Services loaded here -->
         </div>
-        <div style="text-align:right;margin-top:24px">
-          <button class="btn btn-primary" id="step1-next" onclick="goStep(2)" disabled>
-            Tiếp Theo: Chọn Bác Sĩ →
-          </button>
-        </div>
+
       </div>
 
       <!-- ─── Step 2: Doctor ─── -->
@@ -113,9 +109,8 @@
           </div>
         </div>
         <div class="grid-3" id="doctor-grid" style="gap:14px"><!-- Doctors --></div>
-        <div style="display:flex;justify-content:space-between;margin-top:24px">
+        <div style="display:flex;justify-content:flex-start;margin-top:24px">
           <button class="btn btn-ghost" onclick="goStep(1)">← Quay Lại</button>
-          <button class="btn btn-primary" id="step2-next" onclick="goStep(3)" disabled>Tiếp Theo: Chọn Giờ →</button>
         </div>
       </div>
 
@@ -341,7 +336,7 @@ function selectService(idx) {
   document.querySelectorAll('.service-card').forEach(c => {
     c.classList.toggle('selected', c.dataset.idx === String(idx));
   });
-  document.getElementById('step1-next').disabled = false;
+  goStep(2);
 }
 
 // Filter tabs
@@ -409,7 +404,7 @@ function selectDoctor(idx) {
   if (!doc) return;
   state.doctor = doc; state.date = null; state.time = null;
   document.querySelectorAll('.doctor-card').forEach(c => c.classList.toggle('selected', c.dataset.idx === String(idx)));
-  document.getElementById('step2-next').disabled = false;
+  goStep(3);
 }
 
 // ─── Step 3: Calendar & Time Slots ─────────────────────
