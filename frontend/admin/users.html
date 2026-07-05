@@ -230,7 +230,7 @@ document.getElementById('user-form').addEventListener('submit', async (e) => {
   try {
     if (editId) await API.updateAdminUser(editId, body);
     else { body.password = pwd; await API.createAdminUser(body); }
-    closeModal(); Toast.success(editId ? 'Đã cập nhật' : 'Đã thêm người dùng'); loadUsers();
+    closeModal(); Toast.success(editId ? 'Đã cập nhật' : 'Đã thêm người dùng.'); loadUsers();
   } catch(e) { Toast.error(e.message); }
 });
 
