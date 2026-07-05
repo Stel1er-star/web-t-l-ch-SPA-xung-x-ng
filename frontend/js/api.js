@@ -92,6 +92,9 @@ const API = {
   createShift:   (b)   => API.post('/shifts', b),
   updateShift:   (id,b)=> API.put(`/shifts/${id}`, b),
   deleteShift:   (id)  => API.delete(`/shifts/${id}`),
+  getShiftSwaps:        (p)    => API.get('/shifts/swaps', p),
+  createShiftSwap:      (body) => API.post('/shifts/swaps', body),
+  updateShiftSwapStatus:(id,b) => API.put(`/shifts/swaps/${id}/status`, b),
 
   // Reviews
   getReviews:    (p)    => API.get('/reviews', p),
