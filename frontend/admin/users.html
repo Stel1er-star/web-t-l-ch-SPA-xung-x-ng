@@ -99,12 +99,16 @@
     </div>
     <div class="page-container">
       <h1 class="page-title font-heading">Quản Lý Người Dùng</h1>
-      <!-- Tabs -->
-      <div style="display:flex;gap:8px;margin-bottom:20px">
-        <button class="filter-tab active" data-role="">Tất Cả</button>
-        <button class="filter-tab" data-role="admin">🛡️ Admin</button>
-        <button class="filter-tab" data-role="doctor">👨‍⚕️ Bác Sĩ</button>
-        <button class="filter-tab" data-role="customer">👤 Khách Hàng</button>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:16px">
+        <div style="flex:1;min-width:260px">
+          <input id="user-search" type="text" class="form-input" placeholder="Tìm theo tên, username, email, số điện thoại..." style="width:100%">
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="filter-tab active" data-role="">Tất Cả</button>
+          <button class="filter-tab" data-role="admin">🛡️ Admin</button>
+          <button class="filter-tab" data-role="doctor">👨‍⚕️ Bác Sĩ</button>
+          <button class="filter-tab" data-role="customer">👤 Khách Hàng</button>
+        </div>
       </div>
 
       <div class="table-wrapper">
@@ -126,7 +130,7 @@
 Auth.requireLogin('admin');
 populateSidebarUser();
 
-let allUsers = [], roleFilter = '', editId = null;
+let allUsers = [], roleFilter = '', searchTerm = '', editId = null;
 
 document.querySelectorAll('.filter-tab').forEach(tab => {
   tab.addEventListener('click', () => {
@@ -137,10 +141,24 @@ document.querySelectorAll('.filter-tab').forEach(tab => {
   });
 });
 
+document.getElementById('user-search').addEventListener('input', (e) => {
+  searchTerm = e.target.value.trim().toLowerCase();
+  renderTable();
+});
+
 const roleLabels = { admin:'🛡️ Admin', doctor:'👨‍⚕️ Bác Sĩ', customer:'👤 Khách Hàng' };
 
 function renderTable() {
-  const filtered = roleFilter ? allUsers.filter(u => u.role === roleFilter) : allUsers;
+  const filtered = allUsers.filter(u => {
+    const matchesRole = roleFilter ? u.role === roleFilter : true;
+    if (!matchesRole) return false;
+    if (!searchTerm) return true;
+    const haystack = [u.name, u.username, u.email, u.phone, u.specialty, roleLabels[u.role], u.role]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+    return haystack.includes(searchTerm);
+  });
   document.getElementById('users-tbody').innerHTML = filtered.map(u => `
     <tr>
       <td>
