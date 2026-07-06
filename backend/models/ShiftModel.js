@@ -20,11 +20,12 @@ class ShiftModel {
   }
 
   static async isWorking(staffId, date) {
-    // Convert JS date to day abbreviation
+    // Parse date string safely (avoid UTC timezone offset issue)
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const dayName = days[new Date(date).getDay()];
+    const parts = date.split('-').map(Number);
+    const dayName = days[new Date(parts[0], parts[1] - 1, parts[2]).getDay()];
 
-    // 1. Get normal shifts that are NOT swapped away on this date
+    // 1. Get normal shifts NOT swapped away on this date
     const [normalShifts] = await db.query(
       `SELECT s.* FROM Shifts s
        WHERE s.staffId = ? AND s.day = ?
@@ -39,7 +40,7 @@ class ShiftModel {
       [staffId, dayName, staffId, date, staffId, date]
     );
 
-    // 2. Get covered shifts from others on this date
+    // 2. Get covered shifts from swap agreements on this date
     const [coveredShifts] = await db.query(
       `SELECT s.id, s.day, s.startTime, s.endTime
        FROM ShiftSwaps sw

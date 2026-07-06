@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="../css/variables.css">
   <link rel="stylesheet" href="../css/global.css">
   <link rel="stylesheet" href="../css/components.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     .appt-row {
       display: grid;
@@ -120,6 +121,7 @@
         <div class="topbar-actions">
           <input type="text" id="search-input" class="form-input" placeholder="Tìm kiếm tên khách, dịch vụ..." style="width:200px;padding:7px 12px;font-size:13px">
           <button class="btn btn-ghost btn-sm" onclick="refreshAll()">🔄 Làm Mới</button>
+          <button class="btn btn-ghost btn-sm" id="export-pdf-btn" onclick="exportDoctorPDF()">📄 Xuất PDF</button>
         </div>
       </div>
 
@@ -381,6 +383,71 @@
     API.updateApptStatus = (id, body) => API.patch(`/appointments/${id}/status`, body);
 
     loadAppts();
+
+    // ── Xuất PDF Bác sĩ ─────────────────────────────────
+    function exportDoctorPDF() {
+      if (!allAppts.length) { Toast.warning('Không có lịch hẹn nào!'); return; }
+      const user = Auth.getUser();
+      const statusLabel = { pending:'Chờ XN', confirmed:'Đã XN', 'in-progress':'Đang Khám', completed:'Hoàn Thành', cancelled:'Đã Hủy' };
+      const statusColor = { pending:'#F59E0B', confirmed:'#10B981', 'in-progress':'#3B82F6', completed:'#7C3AED', cancelled:'#EF4444' };
+      const rows = allAppts.map((a,i) => `
+        <tr style="background:${i%2===0?'#f9fafb':'#fff'}">
+          <td style="padding:8px 10px;font-weight:600;color:#7C3AED">${String(i+1).padStart(2,'0')}</td>
+          <td style="padding:8px 10px;font-weight:600">${a.customerName}</td>
+          <td style="padding:8px 10px">${a.serviceIcon||''} ${a.serviceName}</td>
+          <td style="padding:8px 10px;font-size:12px;white-space:nowrap">${new Date(a.date).toLocaleDateString('vi-VN')} 🕐 ${String(a.time||'').slice(0,5)}</td>
+          <td style="padding:8px 10px">${a.serviceDuration||60} phút</td>
+          <td style="padding:8px 10px"><span style="background:${statusColor[a.status]}22;color:${statusColor[a.status]};padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">${statusLabel[a.status]||a.status}</span></td>
+          <td style="padding:8px 10px;font-size:11px;color:#6B7280">${a.medicalNote?a.medicalNote.slice(0,40)+(a.medicalNote.length>40?'...':''):'—'}</td>
+        </tr>`).join('');
+
+      const html = `<div style="font-family:'Inter',sans-serif;color:#1a1a2e;padding:24px">
+        <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #7C3AED;padding-bottom:14px;margin-bottom:20px">
+          <div><div style="font-size:24px;font-weight:700;color:#7C3AED">🌿 SpaProMax</div></div>
+          <div style="text-align:right">
+            <div style="font-weight:600;font-size:15px">LỊCH HẸN CỦA TÔI</div>
+            <div style="font-size:12px;color:#666">Bác sĩ / KTV: ${user?.name||'—'} • ${user?.specialty||''}</div>
+            <div style="font-size:12px;color:#666">Xuất lúc: ${new Date().toLocaleString('vi-VN')}</div>
+          </div>
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="background:#7C3AED;color:#fff">
+            <th style="padding:8px 10px;text-align:left">#</th>
+            <th style="padding:8px 10px;text-align:left">Khách Hàng</th>
+            <th style="padding:8px 10px;text-align:left">Dịch Vụ</th>
+            <th style="padding:8px 10px;text-align:left">Thời Gian</th>
+            <th style="padding:8px 10px;text-align:left">Thời Lượng</th>
+            <th style="padding:8px 10px;text-align:left">Trạng Thái</th>
+            <th style="padding:8px 10px;text-align:left">Ghi Chú Y Tế</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+          <tfoot><tr style="background:#F3F4F6;font-weight:700">
+            <td colspan="7" style="padding:8px 10px">TỔNG: ${allAppts.length} lịch | Hoàn thành: ${allAppts.filter(a=>a.status==='completed').length} | Chờ: ${allAppts.filter(a=>a.status==='pending').length}</td>
+          </tr></tfoot>
+        </table>
+        <div style="margin-top:20px;text-align:center;font-size:11px;color:#999;border-top:1px solid #e5e7eb;padding-top:12px">SpaProMax — Tài liệu tự động • support@spapromax.vn</div>
+      </div>`;
+
+      const el = document.createElement('div');
+      el.innerHTML = html;
+      document.body.appendChild(el);
+      const btn = document.getElementById('export-pdf-btn');
+      btn.textContent='⏳ Đang tạo...'; btn.disabled=true;
+      html2pdf().set({
+        margin:[8,8,8,8],
+        image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,useCORS:true},
+        jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}
+      }).from(el).output('blob').then(blob => {
+        document.body.removeChild(el);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = `SpaProMax_BacSi_LichHen_${new Date().toISOString().slice(0,10)}.pdf`;
+        document.body.appendChild(a); a.click();
+        document.body.removeChild(a); URL.revokeObjectURL(url);
+        btn.textContent='📄 Xuất PDF'; btn.disabled=false;
+        Toast.success('Xuất PDF thành công!');
+      }).catch(()=>{document.body.removeChild(el); btn.textContent='📄 Xuất PDF'; btn.disabled=false; Toast.error('Lỗi!');});
+    }
   </script>
 </body>
 

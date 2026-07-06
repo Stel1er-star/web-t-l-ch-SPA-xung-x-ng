@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="../css/global.css">
   <link rel="stylesheet" href="../css/components.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     .main-layout { display: flex; }
     .chart-container { position: relative; height: 280px; }
@@ -70,6 +71,7 @@
           <option value="">Năm...</option>
         </select>
         <button class="btn btn-ghost btn-sm" onclick="loadReports()" style="height:34px">🔄 Làm Mới</button>
+        <button class="btn btn-ghost btn-sm" id="export-report-btn" onclick="exportReportPDF()" style="height:34px">📄 Xuất Báo Cáo PDF</button>
       </div>
     </div>
 
@@ -367,6 +369,139 @@ function renderTopCustomers(customers) {
 }
 
 loadReports();
+
+// ── Xuất Báo Cáo PDF ─────────────────────────────────
+function exportReportPDF() {
+  const btn = document.getElementById('export-report-btn');
+  const revenue   = document.getElementById('s-revenue')?.textContent || '—';
+  const total     = document.getElementById('s-total')?.textContent || '—';
+  const deposit   = document.getElementById('s-deposit')?.textContent || '—';
+  const cancelled = document.getElementById('s-cancel')?.textContent || '—';
+  const period    = document.getElementById('report-period-label')?.textContent || '—';
+  const year      = document.getElementById('year-select')?.value || new Date().getFullYear();
+
+  // Doctor ranking rows
+  const drEls = document.querySelectorAll('#doctor-ranking > div');
+  const drRows = Array.from(drEls).map((el, i) => {
+    const name    = el.querySelector('[style*="font-size:13px;font-weight:600"]')?.textContent?.trim() || '';
+    const sub     = el.querySelector('[style*="font-size:11px"]')?.textContent?.trim() || '';
+    const revenue = el.querySelector('[style*="font-size:13px;font-weight:700"]')?.textContent?.trim() || '';
+    return `<tr style="background:${i%2===0?'#f9fafb':'#fff'}">
+      <td style="padding:7px 10px;font-weight:700;color:#D97706">${['🥇','🥈','🥉','4.','5.'][i]||''}</td>
+      <td style="padding:7px 10px;font-weight:600">${name}</td>
+      <td style="padding:7px 10px;font-size:12px;color:#6B7280">${sub}</td>
+      <td style="padding:7px 10px;font-weight:700;color:#7C3AED">${revenue}</td>
+    </tr>`;
+  }).join('');
+
+  // Top customer rows
+  const cuEls = document.querySelectorAll('#top-customers > div');
+  const cuRows = Array.from(cuEls).map((el, i) => {
+    const name  = el.querySelector('[style*="font-size:13px;font-weight:600"]')?.textContent?.trim() || '';
+    const visits= el.querySelector('[style*="font-size:11px"]')?.textContent?.trim() || '';
+    const spent = el.querySelector('[style*="font-size:13px;font-weight:700"]')?.textContent?.trim() || '';
+    return `<tr style="background:${i%2===0?'#f9fafb':'#fff'}">
+      <td style="padding:7px 10px;font-weight:700;color:#D97706">${['🥇','🥈','🥉','4.','5.'][i]||''}</td>
+      <td style="padding:7px 10px;font-weight:600">${name}</td>
+      <td style="padding:7px 10px;font-size:12px;color:#6B7280">${visits}</td>
+      <td style="padding:7px 10px;font-weight:700;color:#7C3AED">${spent}</td>
+    </tr>`;
+  }).join('');
+
+  const html = `<div style="font-family:'Inter',sans-serif;color:#1a1a2e;padding:28px">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #7C3AED;padding-bottom:14px;margin-bottom:22px">
+      <div>
+        <div style="font-size:26px;font-weight:700;color:#7C3AED">🌿 SpaProMax</div>
+        <div style="font-size:12px;color:#666">Hệ thống quản lý Spa & Y tế chất lượng cao</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-weight:700;font-size:17px">BÁO CÁO DOANH THU</div>
+        <div style="font-size:12px;color:#666">${period} • Năm ${year}</div>
+        <div style="font-size:12px;color:#666">Xuất lúc: ${new Date().toLocaleString('vi-VN')}</div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px;margin-bottom:24px">
+      <div style="background:#7C3AED22;border:1px solid #7C3AED55;border-radius:10px;padding:14px;text-align:center">
+        <div style="font-size:11px;color:#666;margin-bottom:4px">DOANH THU</div>
+        <div style="font-size:20px;font-weight:700;color:#7C3AED">${revenue}</div>
+      </div>
+      <div style="background:#10B98122;border:1px solid #10B98155;border-radius:10px;padding:14px;text-align:center">
+        <div style="font-size:11px;color:#666;margin-bottom:4px">LỊCH HOÀN THÀNH</div>
+        <div style="font-size:20px;font-weight:700;color:#10B981">${total}</div>
+      </div>
+      <div style="background:#06B6D422;border:1px solid #06B6D455;border-radius:10px;padding:14px;text-align:center">
+        <div style="font-size:11px;color:#666;margin-bottom:4px">CÓ ĐẶT CỌC</div>
+        <div style="font-size:20px;font-weight:700;color:#06B6D4">${deposit}</div>
+      </div>
+      <div style="background:#EF444422;border:1px solid #EF444455;border-radius:10px;padding:14px;text-align:center">
+        <div style="font-size:11px;color:#666;margin-bottom:4px">ĐÃ HỦY</div>
+        <div style="font-size:20px;font-weight:700;color:#EF4444">${cancelled}</div>
+      </div>
+    </div>
+
+    <!-- Doctor + Customer ranking -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+      <div>
+        <div style="font-weight:700;font-size:14px;margin-bottom:10px;color:#7C3AED">🏆 Bác Sĩ / KTV Xuất Sắc</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="background:#7C3AED;color:#fff">
+            <th style="padding:7px 10px;text-align:left">#</th>
+            <th style="padding:7px 10px;text-align:left">Họ Tên</th>
+            <th style="padding:7px 10px;text-align:left">Chuyên môn</th>
+            <th style="padding:7px 10px;text-align:left">Doanh Thu</th>
+          </tr></thead>
+          <tbody>${drRows||'<tr><td colspan="4" style="padding:10px;text-align:center;color:#999">Chưa có dữ liệu</td></tr>'}</tbody>
+        </table>
+      </div>
+      <div>
+        <div style="font-weight:700;font-size:14px;margin-bottom:10px;color:#7C3AED">⭐ Khách Hàng Thân Thiết</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="background:#7C3AED;color:#fff">
+            <th style="padding:7px 10px;text-align:left">#</th>
+            <th style="padding:7px 10px;text-align:left">Họ Tên</th>
+            <th style="padding:7px 10px;text-align:left">Lần Ghé</th>
+            <th style="padding:7px 10px;text-align:left">Chi Tiêu</th>
+          </tr></thead>
+          <tbody>${cuRows||'<tr><td colspan="4" style="padding:10px;text-align:center;color:#999">Chưa có dữ liệu</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;text-align:center;font-size:11px;color:#999;border-top:1px solid #e5e7eb;padding-top:12px">
+      SpaProMax — Tài liệu được tạo tự động • support@spapromax.vn
+    </div>
+  </div>`;
+
+  const el = document.createElement('div');
+  el.innerHTML = html;
+  document.body.appendChild(el);
+  btn.textContent = '⏳ Đang tạo...';
+  btn.disabled = true;
+
+  html2pdf().set({
+    margin:[8,8,8,8],
+    image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,useCORS:true},
+    jsPDF:{unit:'mm',format:'a4',orientation:'portrait'}
+  }).from(el).output('blob').then(blob => {
+    document.body.removeChild(el);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `SpaProMax_BaoCao_${period.replace(/\//g,'-').replace(/\s/g,'_')}_${year}.pdf`;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+    btn.textContent='📄 Xuất Báo Cáo PDF';
+    btn.disabled=false;
+    Toast.success('Xuất báo cáo PDF thành công! 📄');
+  }).catch(()=>{
+    document.body.removeChild(el);
+    btn.textContent='📄 Xuất Báo Cáo PDF';
+    btn.disabled=false;
+    Toast.error('Lỗi tạo PDF!');
+  });
+}
 </script>
 </body>
 </html>
