@@ -37,7 +37,7 @@
       <div class="grid-2" style="gap:12px">
         <div class="form-group">
           <label class="form-label">Tên đăng nhập *</label>
-          <input type="text" id="u-username" class="form-input" required>
+          <input type="text" id="u-username" class="form-input" minlength="6" maxlength="20" required>
         </div>
         <div class="form-group">
           <label class="form-label">Mật khẩu <span id="pwd-optional">(để trống nếu không đổi)</span></label>
@@ -179,7 +179,7 @@ function renderTable() {
       <td>
         <div style="display:flex;gap:6px">
           <button class="btn btn-ghost btn-sm" onclick="openEditModal(${JSON.stringify(u).replace(/"/g,'&quot;')})">✏️</button>
-          ${u.is_active ? `<button class="btn btn-danger btn-sm" onclick="deactivateUser('${u.id}','${u.name}')">🚫</button>` : ''}
+          ${u.is_active ? `<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}','${(u.name || '').replace(/'/g, "\\'")}')">�️</button>` : ''}
         </div>
       </td>
     </tr>
@@ -233,9 +233,15 @@ function closeModal() { document.getElementById('user-modal').classList.remove('
 
 document.getElementById('user-form').addEventListener('submit', async (e) => {
   e.preventDefault();
+  const username = document.getElementById('u-username').value.trim();
+  if (username.length < 6 || username.length > 20) {
+    Toast.warning('Tên đăng nhập phải từ 6 đến 20 ký tự');
+    return;
+  }
+
   const body = {
     name: document.getElementById('u-name').value,
-    username: document.getElementById('u-username').value,
+    username,
     role: document.getElementById('u-role').value,
     email: document.getElementById('u-email').value || null,
     phone: document.getElementById('u-phone').value || null,
@@ -252,11 +258,11 @@ document.getElementById('user-form').addEventListener('submit', async (e) => {
   } catch(e) { Toast.error(e.message); }
 });
 
-async function deactivateUser(id, name) {
-  if (!confirm(`Vô hiệu hóa tài khoản "${name}"?`)) return;
+async function deleteUser(id, name) {
+  if (!confirm(`Xóa vĩnh viễn tài khoản "${name}"?`)) return;
   try {
     await API.deleteAdminUser(id);
-    Toast.success('Đã vô hiệu hóa'); loadUsers();
+    Toast.success('Đã xóa người dùng'); loadUsers();
   } catch(e) { Toast.error(e.message); }
 }
 
