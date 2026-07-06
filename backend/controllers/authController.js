@@ -37,14 +37,18 @@ exports.login = async (req, res) => {
 exports.register = async (req, res) => {
   try {
     const { username, password, name, email, phone } = req.body;
-    if (!username || !password || !name) return res.status(400).json({ error: 'Thiếu thông tin bắt buộc' });
+    const normalizedUsername = (username || '').trim();
+    if (!normalizedUsername || !password || !name) return res.status(400).json({ error: 'Thiếu thông tin bắt buộc' });
+    if (normalizedUsername.length < 6 || normalizedUsername.length > 20) {
+      return res.status(400).json({ error: 'Tên đăng nhập phải từ 6 đến 20 ký tự' });
+    }
     if (password.length < 6) return res.status(400).json({ error: 'Mật khẩu phải có ít nhất 6 ký tự' });
 
-    if (await UserModel.existsUsername(username)) return res.status(409).json({ error: 'Tên đăng nhập đã tồn tại' });
+    if (await UserModel.existsUsername(normalizedUsername)) return res.status(409).json({ error: 'Tên đăng nhập này đã được sử dụng bởi người khác' });
     if (email && await UserModel.existsEmail(email)) return res.status(409).json({ error: 'Email đã được sử dụng' });
 
     const id = UserModel.generateId('customer');
-    const user = await UserModel.create({ id, username, password, role: 'customer', name, email, phone });
+    const user = await UserModel.create({ id, username: normalizedUsername, password, role: 'customer', name, email, phone });
     const token = generateToken(user);
     res.status(201).json({ token, user, message: 'Đăng ký thành công' });
   } catch (err) {
