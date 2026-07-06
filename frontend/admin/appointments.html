@@ -86,6 +86,7 @@
       <div class="topbar">
         <div style="font-size:14px;color:var(--text-secondary)">Admin / Quản Lý Lịch Hẹn</div>
         <div class="topbar-actions">
+          <input type="text" id="search-input" class="form-input" placeholder="Tìm kiếm tên, dịch vụ..." style="width:200px;padding:7px 12px;font-size:13px">
           <input type="date" id="filter-date" class="form-input" style="width:auto;padding:7px 12px;font-size:13px">
           <button class="btn btn-ghost btn-sm" onclick="refreshAll()">🔄 Làm Mới</button>
         </div>
@@ -132,7 +133,7 @@
     Auth.requireLogin('admin');
     populateSidebarUser();
 
-    let allAppts = [], filterStatus = '', selectedAppt = null;
+    let allAppts = [], filterStatus = '', searchQuery = '', selectedAppt = null;
 
     document.querySelectorAll('.filter-tab').forEach(tab => {
       tab.addEventListener('click', () => {
@@ -144,7 +145,15 @@
     });
 
     function renderTable() {
-      const filtered = filterStatus ? allAppts.filter(a => a.status === filterStatus) : allAppts;
+      const filtered = allAppts.filter(a => {
+        const matchStatus = filterStatus ? a.status === filterStatus : true;
+        const matchSearch = searchQuery ? (
+          (a.customerName || '').toLowerCase().includes(searchQuery) ||
+          (a.staffName || '').toLowerCase().includes(searchQuery) ||
+          (a.serviceName || '').toLowerCase().includes(searchQuery)
+        ) : true;
+        return matchStatus && matchSearch;
+      });
       const tbody = document.getElementById('appt-tbody');
       tbody.innerHTML = filtered.length ? filtered.map(a => `
     <tr>
@@ -168,8 +177,15 @@
     }
 
     document.getElementById('filter-date').addEventListener('change', loadAppts);
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      searchQuery = e.target.value.trim().toLowerCase();
+      renderTable();
+    });
 
     function refreshAll() {
+      const searchInput = document.getElementById('search-input');
+      if (searchInput) searchInput.value = '';
+      searchQuery = '';
       document.getElementById('filter-date').value = '';
       document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
       document.querySelector('.filter-tab[data-status=""]').classList.add('active');
