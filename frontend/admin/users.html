@@ -49,7 +49,12 @@
           </div>
           <div class="form-group">
             <label class="form-label">Mật khẩu <span id="pwd-optional">(để trống nếu không đổi)</span></label>
-            <input type="password" id="u-password" class="form-input" placeholder="Ít nhất 6 ký tự">
+            <div style="position:relative">
+              <input type="password" id="u-password" class="form-input" placeholder="Ít nhất 6 ký tự, 1 hoa, 1 ký tự đặc biệt" style="padding-right:40px" oninput="clearPasswordError()">
+              <button type="button" id="pwd-toggle" onclick="togglePasswordVisibility()" title="Hiện/ẩn mật khẩu"
+                style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:16px;line-height:1;padding:4px;display:flex;align-items:center">👁️</button>
+            </div>
+            <div id="password-error" style="display:none;color:#f87171;font-size:12px;margin-top:4px"></div>
           </div>
         </div>
         <div class="grid-2" style="gap:12px">
@@ -253,6 +258,12 @@
     function closeModal() {
       document.getElementById('user-modal').classList.remove('open');
       clearUsernameError();
+      clearPasswordError();
+      // Reset icon mắt về mặc định
+      const pwdInput = document.getElementById('u-password');
+      const pwdToggle = document.getElementById('pwd-toggle');
+      if (pwdInput) pwdInput.type = 'password';
+      if (pwdToggle) pwdToggle.textContent = '👁️';
     }
 
     function showUsernameError() {
@@ -267,6 +278,33 @@
       el.style.display = 'none';
       document.getElementById('u-username').style.borderColor = '';
       document.getElementById('u-username').style.boxShadow = '';
+    }
+
+    function togglePasswordVisibility() {
+      const input = document.getElementById('u-password');
+      const btn = document.getElementById('pwd-toggle');
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '🙈';
+      } else {
+        input.type = 'password';
+        btn.textContent = '👁️';
+      }
+    }
+
+    function showPasswordError(msg) {
+      const el = document.getElementById('password-error');
+      el.textContent = '⚠️ ' + msg;
+      el.style.display = 'block';
+      document.getElementById('u-password').style.borderColor = '#f87171';
+      document.getElementById('u-password').style.boxShadow = '0 0 0 2px rgba(248,113,113,0.25)';
+    }
+
+    function clearPasswordError() {
+      const el = document.getElementById('password-error');
+      el.style.display = 'none';
+      document.getElementById('u-password').style.borderColor = '';
+      document.getElementById('u-password').style.boxShadow = '';
     }
 
     document.getElementById('user-form').addEventListener('submit', async (e) => {
@@ -296,8 +334,29 @@
         specialty: document.getElementById('u-specialty').value || null,
       };
       const pwd = document.getElementById('u-password').value;
-      if (pwd) body.password = pwd;
-      else if (!editId) { Toast.warning('Vui lòng nhập mật khẩu'); return; }
+
+      // Validate mật khẩu khi có nhập
+      if (pwd) {
+        if (pwd.length < 6) {
+          showPasswordError('Mật khẩu phải có ít nhất 6 ký tự.');
+          document.getElementById('u-password').focus();
+          return;
+        }
+        if (!/[A-Z]/.test(pwd)) {
+          showPasswordError('Mật khẩu phải chứa ít nhất 1 chữ cái in hoa.');
+          document.getElementById('u-password').focus();
+          return;
+        }
+        if (!/[!@#$%^&*()_+\-=\[\]{};\':"|,.<>\/?`~\\]/.test(pwd)) {
+          showPasswordError('Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt (ví dụ: @, #, !, ...).');
+          document.getElementById('u-password').focus();
+          return;
+        }
+        body.password = pwd;
+      } else if (!editId) {
+        Toast.warning('Vui lòng nhập mật khẩu');
+        return;
+      }
 
       try {
         if (editId) await API.updateAdminUser(editId, body);
