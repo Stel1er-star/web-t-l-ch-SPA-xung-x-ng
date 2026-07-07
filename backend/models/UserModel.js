@@ -68,7 +68,24 @@ class UserModel {
   }
 
   static async delete(id) {
-    await db.query('UPDATE Users SET is_active = 0 WHERE id = ?', [id]);
+    const connection = await db.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      await connection.query('DELETE FROM Notifications WHERE userId = ?', [id]);
+      await connection.query('DELETE FROM Reviews WHERE customerId = ? OR staffId = ?', [id, id]);
+      await connection.query('DELETE FROM Appointments WHERE customerId = ? OR staffId = ?', [id, id]);
+      await connection.query('DELETE FROM ServiceStaff WHERE staffId = ?', [id]);
+      await connection.query('DELETE FROM Shifts WHERE staffId = ?', [id]);
+      await connection.query('DELETE FROM Users WHERE id = ?', [id]);
+
+      await connection.commit();
+    } catch (err) {
+      await connection.rollback();
+      throw err;
+    } finally {
+      connection.release();
+    }
   }
 
   static async existsUsername(username, excludeId = null) {

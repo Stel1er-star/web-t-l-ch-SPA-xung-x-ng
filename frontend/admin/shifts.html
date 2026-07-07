@@ -1,9 +1,13 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
+
 <head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Quản Lý Ca Làm Việc — SpaProMax</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="../css/variables.css">
   <link rel="stylesheet" href="../css/global.css">
   <link rel="stylesheet" href="../css/components.css">
@@ -16,11 +20,13 @@
       border-radius: var(--radius);
       overflow: hidden;
     }
+
     .shift-cell {
       background: var(--bg-secondary);
       padding: 10px 8px;
       min-height: 48px;
     }
+
     .shift-header {
       background: var(--bg-tertiary);
       padding: 10px 8px;
@@ -31,6 +37,7 @@
       letter-spacing: 0.06em;
       text-transform: uppercase;
     }
+
     .shift-staff-cell {
       background: var(--bg-tertiary);
       padding: 12px 14px;
@@ -38,9 +45,10 @@
       align-items: center;
       gap: 10px;
     }
+
     .shift-block {
-      background: rgba(124,58,237,0.2);
-      border: 1px solid rgba(124,58,237,0.4);
+      background: rgba(124, 58, 237, 0.2);
+      border: 1px solid rgba(124, 58, 237, 0.4);
       border-radius: 6px;
       padding: 4px 8px;
       font-size: 11px;
@@ -54,238 +62,332 @@
       gap: 4px;
       margin-bottom: 3px;
     }
-    .shift-block:hover { background: rgba(124,58,237,0.35); }
-    .shift-block.morning { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.4); color: var(--gold); }
-    .shift-block.afternoon { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.4); color: var(--blue-light); }
-    .shift-block.evening { background: rgba(124,58,237,0.15); border-color: rgba(124,58,237,0.4); color: var(--purple-lighter); }
-    .add-shift-btn {
-      width: 100%; padding: 4px;
-      background: transparent; border: 1px dashed var(--border);
-      border-radius: 6px; font-size: 16px;
-      color: var(--text-muted); cursor: pointer;
-      transition: var(--transition); margin-top: 3px;
-      display: flex; align-items: center; justify-content: center;
+
+    .shift-block:hover {
+      background: rgba(124, 58, 237, 0.35);
     }
-    .add-shift-btn:hover { border-color: var(--purple); color: var(--purple-lighter); background: rgba(124,58,237,0.08); }
+
+    .shift-block.morning {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.4);
+      color: var(--gold);
+    }
+
+    .shift-block.afternoon {
+      background: rgba(59, 130, 246, 0.15);
+      border-color: rgba(59, 130, 246, 0.4);
+      color: var(--blue-light);
+    }
+
+    .shift-block.evening {
+      background: rgba(124, 58, 237, 0.15);
+      border-color: rgba(124, 58, 237, 0.4);
+      color: var(--purple-lighter);
+    }
+
+    .add-shift-btn {
+      width: 100%;
+      padding: 4px;
+      background: transparent;
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      font-size: 16px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: var(--transition);
+      margin-top: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .add-shift-btn:hover {
+      border-color: var(--purple);
+      color: var(--purple-lighter);
+      background: rgba(124, 58, 237, 0.08);
+    }
   </style>
 </head>
+
 <body>
-<div id="toast-container"></div>
+  <div id="toast-container"></div>
 
-<!-- Add/Edit Shift Modal -->
-<div class="modal-overlay" id="shift-modal">
-  <div class="modal" style="max-width:420px">
-    <div class="modal-header">
-      <div class="modal-title" id="shift-modal-title">Thêm Ca Làm Việc</div>
-      <button class="modal-close" onclick="closeShiftModal()">✕</button>
-    </div>
-    <form id="shift-form" style="display:flex;flex-direction:column;gap:14px">
-      <input type="hidden" id="shift-id">
-      <div class="form-group">
-        <label class="form-label">Nhân Viên / Bác Sĩ *</label>
-        <select class="form-select" id="shift-staff" required>
-          <option value="">-- Chọn nhân viên --</option>
-        </select>
+  <!-- Add/Edit Shift Modal -->
+  <div class="modal-overlay" id="shift-modal">
+    <div class="modal" style="max-width:420px">
+      <div class="modal-header">
+        <div class="modal-title" id="shift-modal-title">Thêm Ca Làm Việc</div>
+        <button class="modal-close" onclick="closeShiftModal()">✕</button>
       </div>
-      <div class="form-group">
-        <label class="form-label">Ngày Trong Tuần *</label>
-        <select class="form-select" id="shift-day" required>
-          <option value="Mon">Thứ 2</option>
-          <option value="Tue">Thứ 3</option>
-          <option value="Wed">Thứ 4</option>
-          <option value="Thu">Thứ 5</option>
-          <option value="Fri">Thứ 6</option>
-          <option value="Sat">Thứ 7</option>
-          <option value="Sun">Chủ Nhật</option>
-        </select>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <form id="shift-form" style="display:flex;flex-direction:column;gap:14px">
+        <input type="hidden" id="shift-id">
         <div class="form-group">
-          <label class="form-label">Giờ Bắt Đầu *</label>
-          <input type="time" class="form-input" id="shift-start" value="08:00" required>
+          <label class="form-label">Nhân Viên / Bác Sĩ *</label>
+          <select class="form-select" id="shift-staff" required>
+            <option value="">-- Chọn nhân viên --</option>
+          </select>
         </div>
         <div class="form-group">
-          <label class="form-label">Giờ Kết Thúc *</label>
-          <input type="time" class="form-input" id="shift-end" value="17:00" required>
+          <label class="form-label">Ngày Trong Tuần *</label>
+          <select class="form-select" id="shift-day" required>
+            <option value="Mon">Thứ 2</option>
+            <option value="Tue">Thứ 3</option>
+            <option value="Wed">Thứ 4</option>
+            <option value="Thu">Thứ 5</option>
+            <option value="Fri">Thứ 6</option>
+            <option value="Sat">Thứ 7</option>
+            <option value="Sun">Chủ Nhật</option>
+          </select>
         </div>
-      </div>
-
-      <!-- Quick Templates -->
-      <div>
-        <div class="form-label" style="margin-bottom:8px">Ca mẫu nhanh:</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button type="button" class="btn btn-ghost btn-sm" onclick="setShiftTemplate('08:00','12:00')">🌅 Sáng (8-12h)</button>
-          <button type="button" class="btn btn-ghost btn-sm" onclick="setShiftTemplate('13:00','17:00')">☀️ Chiều (13-17h)</button>
-          <button type="button" class="btn btn-ghost btn-sm" onclick="setShiftTemplate('08:00','17:00')">🌞 Cả ngày (8-17h)</button>
-          <button type="button" class="btn btn-ghost btn-sm" onclick="setShiftTemplate('17:00','21:00')">🌆 Tối (17-21h)</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="form-group">
+            <label class="form-label">Giờ Bắt Đầu *</label>
+            <input type="time" class="form-input" id="shift-start" value="08:00" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Giờ Kết Thúc *</label>
+            <input type="time" class="form-input" id="shift-end" value="17:00" required>
+          </div>
         </div>
-      </div>
 
-      <div class="modal-footer" style="margin-top:8px">
-        <button type="button" class="btn btn-ghost" onclick="closeShiftModal()">Hủy</button>
-        <button type="submit" class="btn btn-primary" id="shift-submit-btn">💾 Lưu Ca</button>
-      </div>
-    </form>
-  </div>
-</div>
-
-<!-- Delete Confirm Modal -->
-<div class="modal-overlay" id="delete-modal">
-  <div class="modal" style="max-width:380px;text-align:center">
-    <div style="font-size:48px;margin-bottom:12px">🗑️</div>
-    <div class="modal-title" style="margin-bottom:8px">Xóa Ca Làm Việc?</div>
-    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:24px" id="delete-confirm-text">Bạn có chắc chắn?</p>
-    <div style="display:flex;gap:10px;justify-content:center">
-      <button class="btn btn-ghost" onclick="document.getElementById('delete-modal').classList.remove('open')">Hủy</button>
-      <button class="btn btn-danger" id="confirm-delete-btn">Xóa</button>
-    </div>
-  </div>
-</div>
-
-<div class="main-layout">
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="sidebar-logo"><div class="sidebar-logo-icon">🌿</div><span class="sidebar-logo-text">SpaProMax</span></div>
-    <nav class="sidebar-nav">
-      <div class="sidebar-section">
-        <div class="sidebar-section-title">Tổng Quan</div>
-        <a href="dashboard.html" class="sidebar-link"><span class="sidebar-link-icon">📊</span> Dashboard</a>
-      </div>
-      <div class="sidebar-section">
-        <div class="sidebar-section-title">Quản Lý</div>
-        <a href="appointments.html" class="sidebar-link"><span class="sidebar-link-icon">🗓️</span> Lịch Hẹn</a>
-        <a href="users.html" class="sidebar-link"><span class="sidebar-link-icon">👥</span> Người Dùng</a>
-        <a href="services.html" class="sidebar-link"><span class="sidebar-link-icon">✨</span> Dịch Vụ</a>
-        <a href="shifts.html" class="sidebar-link active"><span class="sidebar-link-icon">🕐</span> Ca Làm Việc</a>
-        <a href="reviews.html" class="sidebar-link"><span class="sidebar-link-icon">⭐</span> Đánh Giá</a>
-        <a href="reports.html" class="sidebar-link"><span class="sidebar-link-icon">📈</span> Báo Cáo</a>
-      </div>
-      <div class="sidebar-section">
-        <a href="../index.html" class="sidebar-link"><span class="sidebar-link-icon">🌐</span> Trang Chủ</a>
-        <a class="sidebar-link" data-action="logout"><span class="sidebar-link-icon">🚪</span> Đăng Xuất</a>
-      </div>
-    </nav>
-    <div class="sidebar-user">
-      <img id="sidebar-user-avatar" src="" class="sidebar-user-avatar">
-      <div><div class="sidebar-user-name" id="sidebar-user-name">—</div><div class="sidebar-user-role" id="sidebar-user-role">admin</div></div>
-    </div>
-  </aside>
-
-  <!-- MAIN -->
-  <main class="main-content">
-    <div class="topbar">
-      <div style="font-size:14px;color:var(--text-secondary)">Admin / Ca Làm Việc</div>
-      <div class="topbar-actions">
-        <button class="btn btn-ghost btn-sm" onclick="loadAll()">🔄 Làm Mới</button>
-        <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Thêm Ca</button>
-      </div>
-    </div>
-
-    <div class="page-container">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:16px">
+        <!-- Quick Templates -->
         <div>
-          <h1 class="page-title font-heading">Ca Làm Việc</h1>
-          <p class="page-subtitle">Quản lý lịch làm việc hàng tuần của đội ngũ</p>
-        </div>
-        <!-- Legend -->
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <div style="display:flex;align-items:center;gap:6px;font-size:12px">
-            <div style="width:12px;height:12px;border-radius:3px;background:rgba(245,158,11,0.3);border:1px solid var(--gold)"></div>
-            <span style="color:var(--text-secondary)">Buổi sáng</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:6px;font-size:12px">
-            <div style="width:12px;height:12px;border-radius:3px;background:rgba(59,130,246,0.3);border:1px solid var(--blue-light)"></div>
-            <span style="color:var(--text-secondary)">Buổi chiều</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:6px;font-size:12px">
-            <div style="width:12px;height:12px;border-radius:3px;background:rgba(124,58,237,0.3);border:1px solid var(--purple-lighter)"></div>
-            <span style="color:var(--text-secondary)">Buổi tối</span>
+          <div class="form-label" style="margin-bottom:8px">Ca mẫu nhanh:</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button type="button" class="btn btn-ghost btn-sm" onclick="setShiftTemplate('08:00','12:00')">🌅 Sáng
+              (8-12h)</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="setShiftTemplate('13:00','17:00')">☀️ Chiều
+              (13-17h)</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="setShiftTemplate('08:00','17:00')">🌞 Cả ngày
+              (8-17h)</button>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="setShiftTemplate('17:00','21:00')">🌆 Tối
+              (17-21h)</button>
           </div>
         </div>
-      </div>
 
-      <!-- Staff Filter -->
-      <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;align-items:center">
-        <span style="font-size:13px;color:var(--text-muted)">Lọc theo:</span>
-        <div style="display:flex;gap:6px;flex-wrap:wrap" id="staff-filter-tabs">
-          <button class="filter-tab active" data-staff="">Tất Cả</button>
+        <div class="modal-footer" style="margin-top:8px">
+          <button type="button" class="btn btn-ghost" onclick="closeShiftModal()">Hủy</button>
+          <button type="submit" class="btn btn-primary" id="shift-submit-btn">💾 Lưu Ca</button>
         </div>
-      </div>
+      </form>
+    </div>
+  </div>
 
-      <!-- Shift Grid -->
-      <div class="card" style="padding:20px;overflow-x:auto">
-        <div id="shift-grid-wrapper">
-          <div style="text-align:center;padding:48px;color:var(--text-muted)">
-            <div class="loader-ring" style="margin:0 auto 16px"></div>
-            Đang tải lịch làm việc...
-          </div>
-        </div>
-      </div>
-
-      <!-- Summary Cards -->
-      <div class="grid-4" style="margin-top:24px" id="summary-cards">
-        <!-- Populated by JS -->
+  <!-- Delete Confirm Modal -->
+  <div class="modal-overlay" id="delete-modal">
+    <div class="modal" style="max-width:380px;text-align:center">
+      <div style="font-size:48px;margin-bottom:12px">🗑️</div>
+      <div class="modal-title" style="margin-bottom:8px">Xóa Ca Làm Việc?</div>
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:24px" id="delete-confirm-text">Bạn có chắc
+        chắn?</p>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button class="btn btn-ghost"
+          onclick="document.getElementById('delete-modal').classList.remove('open')">Hủy</button>
+        <button class="btn btn-danger" id="confirm-delete-btn">Xóa</button>
       </div>
     </div>
-  </main>
-</div>
+  </div>
 
-<script src="../js/api.js"></script>
-<script src="../js/auth.js"></script>
-<script>
-Auth.requireLogin('admin');
-populateSidebarUser();
+  <!-- Confirm Action Modal -->
+  <div class="modal-overlay" id="confirm-action-modal">
+    <div class="modal" style="max-width:400px;text-align:center">
+      <div style="font-size:48px;margin-bottom:16px">❓</div>
+      <div class="modal-title" style="margin-bottom:8px">Xác nhận</div>
+      <p id="confirm-action-message" style="color:var(--text-secondary);font-size:14px;margin-bottom:24px"></p>
+      <div style="display:flex;gap:12px;justify-content:center">
+        <button class="btn btn-ghost" onclick="closeConfirmActionModal()">Hủy</button>
+        <button class="btn btn-primary" id="confirm-action-btn">Đồng ý</button>
+      </div>
+    </div>
+  </div>
 
-const DAYS = [
-  { key: 'Mon', label: 'Thứ 2' }, { key: 'Tue', label: 'Thứ 3' },
-  { key: 'Wed', label: 'Thứ 4' }, { key: 'Thu', label: 'Thứ 5' },
-  { key: 'Fri', label: 'Thứ 6' }, { key: 'Sat', label: 'Thứ 7' },
-  { key: 'Sun', label: 'CN' }
-];
+  <div class="main-layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">🌿</div><span class="sidebar-logo-text">SpaProMax</span>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Tổng Quan</div>
+          <a href="dashboard.html" class="sidebar-link"><span class="sidebar-link-icon">📊</span> Dashboard</a>
+        </div>
+        <div class="sidebar-section">
+          <div class="sidebar-section-title">Quản Lý</div>
+          <a href="appointments.html" class="sidebar-link"><span class="sidebar-link-icon">🗓️</span> Lịch Hẹn</a>
+          <a href="users.html" class="sidebar-link"><span class="sidebar-link-icon">👥</span> Người Dùng</a>
+          <a href="services.html" class="sidebar-link"><span class="sidebar-link-icon">✨</span> Dịch Vụ</a>
+          <a href="shifts.html" class="sidebar-link active"><span class="sidebar-link-icon">🕐</span> Ca Làm Việc</a>
+          <a href="reviews.html" class="sidebar-link"><span class="sidebar-link-icon">⭐</span> Đánh Giá</a>
+          <a href="reports.html" class="sidebar-link"><span class="sidebar-link-icon">📈</span> Báo Cáo</a>
+        </div>
+        <div class="sidebar-section">
+          <a href="../index.html" class="sidebar-link"><span class="sidebar-link-icon">🌐</span> Trang Chủ</a>
+          <a class="sidebar-link" data-action="logout"><span class="sidebar-link-icon">🚪</span> Đăng Xuất</a>
+        </div>
+      </nav>
+      <div class="sidebar-user">
+        <img id="sidebar-user-avatar" src="" class="sidebar-user-avatar">
+        <div>
+          <div class="sidebar-user-name" id="sidebar-user-name">—</div>
+          <div class="sidebar-user-role" id="sidebar-user-role">admin</div>
+        </div>
+      </div>
+    </aside>
 
-let allShifts = [], allStaff = [], filterStaff = '', deleteTarget = null;
+    <!-- MAIN -->
+    <main class="main-content">
+      <div class="topbar">
+        <div style="font-size:14px;color:var(--text-secondary)">Admin / Ca Làm Việc</div>
+        <div class="topbar-actions">
+          <button class="btn btn-ghost btn-sm" onclick="loadAll()">🔄 Làm Mới</button>
+          <button class="btn btn-primary btn-sm" onclick="openAddModal()">+ Thêm Ca</button>
+        </div>
+      </div>
 
-function getShiftClass(start) {
-  const h = parseInt(start.split(':')[0]);
-  if (h < 12) return 'morning';
-  if (h < 17) return 'afternoon';
-  return 'evening';
-}
+      <div class="page-container">
+        <div
+          style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:16px">
+          <div>
+            <h1 class="page-title font-heading">Ca Làm Việc</h1>
+            <p class="page-subtitle">Quản lý lịch làm việc hàng tuần của đội ngũ</p>
+          </div>
+          <!-- Legend -->
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px">
+              <div
+                style="width:12px;height:12px;border-radius:3px;background:rgba(245,158,11,0.3);border:1px solid var(--gold)">
+              </div>
+              <span style="color:var(--text-secondary)">Buổi sáng</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px">
+              <div
+                style="width:12px;height:12px;border-radius:3px;background:rgba(59,130,246,0.3);border:1px solid var(--blue-light)">
+              </div>
+              <span style="color:var(--text-secondary)">Buổi chiều</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px">
+              <div
+                style="width:12px;height:12px;border-radius:3px;background:rgba(124,58,237,0.3);border:1px solid var(--purple-lighter)">
+              </div>
+              <span style="color:var(--text-secondary)">Buổi tối</span>
+            </div>
+          </div>
+        </div>
 
-function getShiftEmoji(start) {
-  const h = parseInt(start.split(':')[0]);
-  if (h < 12) return '🌅';
-  if (h < 17) return '☀️';
-  return '🌆';
-}
+        <!-- Staff Filter -->
+        <div style="display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;align-items:center">
+          <span style="font-size:13px;color:var(--text-muted)">Lọc theo:</span>
+          <div style="display:flex;gap:6px;flex-wrap:wrap" id="staff-filter-tabs">
+            <button class="filter-tab active" data-staff="">Tất Cả</button>
+          </div>
+        </div>
 
-function renderGrid() {
-  const staffToShow = filterStaff
-    ? allStaff.filter(s => s.id === filterStaff)
-    : allStaff;
+        <!-- Shift Grid -->
+        <div class="card" style="padding:20px;overflow-x:auto">
+          <div id="shift-grid-wrapper">
+            <div style="text-align:center;padding:48px;color:var(--text-muted)">
+              <div class="loader-ring" style="margin:0 auto 16px"></div>
+              Đang tải lịch làm việc...
+            </div>
+          </div>
+        </div>
 
-  if (!staffToShow.length) {
-    document.getElementById('shift-grid-wrapper').innerHTML =
-      `<div class="empty-state"><div class="empty-state-icon">📅</div><div class="empty-state-title">Chưa có ca làm việc</div><div class="empty-state-desc">Nhấn "+ Thêm Ca" để bắt đầu</div></div>`;
-    return;
-  }
+        <!-- Summary Cards -->
+        <div class="grid-4" style="margin-top:24px" id="summary-cards">
+          <!-- Populated by JS -->
+        </div>
 
-  const colWidths = '200px ' + DAYS.map(() => '1fr').join(' ');
-  let html = `<div class="shift-grid" style="grid-template-columns:${colWidths}">`;
+        <!-- ── Duyệt Đổi Ca & Trực Hộ ── -->
+        <div class="card" style="margin-top:28px">
+          <div class="card-header" style="border-bottom:1px solid var(--border);padding-bottom:14px;margin-bottom:16px">
+            <div class="card-title">🔄 Phê Duyệt Đổi Ca / Trực Hộ</div>
+            <span style="font-size:13px;color:var(--text-muted)">Xem và duyệt các yêu cầu đổi ca trực giữa các bác
+              sĩ</span>
+          </div>
+          <div class="table-wrapper">
+            <table class="table" style="width:100%;border-collapse:collapse">
+              <thead>
+                <tr style="border-bottom:1px solid var(--border)">
+                  <th style="text-align:left;padding:12px 8px;font-size:12px;color:var(--text-muted)">Bác Sĩ Yêu Cầu
+                  </th>
+                  <th style="text-align:left;padding:12px 8px;font-size:12px;color:var(--text-muted)">Bác Sĩ Nhận</th>
+                  <th style="text-align:left;padding:12px 8px;font-size:12px;color:var(--text-muted)">Chi Tiết Đổi Ca
+                  </th>
+                  <th style="text-align:left;padding:12px 8px;font-size:12px;color:var(--text-muted)">Lý Do</th>
+                  <th style="text-align:left;padding:12px 8px;font-size:12px;color:var(--text-muted)">Trạng Thái</th>
+                  <th style="text-align:right;padding:12px 8px;font-size:12px;color:var(--text-muted)">Hành Động</th>
+                </tr>
+              </thead>
+              <tbody id="admin-swaps-tbody">
+                <tr>
+                  <td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px">Đang tải danh sách yêu
+                    cầu...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
 
-  // Header row
-  html += `<div class="shift-header" style="text-align:left;padding-left:14px">Nhân Viên</div>`;
-  DAYS.forEach(d => {
-    const isWeekend = d.key === 'Sat' || d.key === 'Sun';
-    html += `<div class="shift-header" style="${isWeekend ? 'color:var(--gold)' : ''}">${d.label}</div>`;
-  });
+  <script src="../js/api.js"></script>
+  <script src="../js/auth.js"></script>
+  <script>
+    Auth.requireLogin('admin');
+    populateSidebarUser();
 
-  // Staff rows
-  staffToShow.forEach(staff => {
-    const staffShifts = allShifts.filter(s => s.staffId === staff.id);
+    const DAYS = [
+      { key: 'Mon', label: 'Thứ 2' }, { key: 'Tue', label: 'Thứ 3' },
+      { key: 'Wed', label: 'Thứ 4' }, { key: 'Thu', label: 'Thứ 5' },
+      { key: 'Fri', label: 'Thứ 6' }, { key: 'Sat', label: 'Thứ 7' },
+      { key: 'Sun', label: 'CN' }
+    ];
 
-    // Staff name cell
-    html += `
+    let allShifts = [], allStaff = [], filterStaff = '', deleteTarget = null;
+
+    function getShiftClass(start) {
+      const h = parseInt(start.split(':')[0]);
+      if (h < 12) return 'morning';
+      if (h < 17) return 'afternoon';
+      return 'evening';
+    }
+
+    function getShiftEmoji(start) {
+      const h = parseInt(start.split(':')[0]);
+      if (h < 12) return '🌅';
+      if (h < 17) return '☀️';
+      return '🌆';
+    }
+
+    function renderGrid() {
+      const staffToShow = filterStaff
+        ? allStaff.filter(s => s.id === filterStaff)
+        : allStaff;
+
+      if (!staffToShow.length) {
+        document.getElementById('shift-grid-wrapper').innerHTML =
+          `<div class="empty-state"><div class="empty-state-icon">📅</div><div class="empty-state-title">Chưa có ca làm việc</div><div class="empty-state-desc">Nhấn "+ Thêm Ca" để bắt đầu</div></div>`;
+        return;
+      }
+
+      const colWidths = '200px ' + DAYS.map(() => '1fr').join(' ');
+      let html = `<div class="shift-grid" style="grid-template-columns:${colWidths}">`;
+
+      // Header row
+      html += `<div class="shift-header" style="text-align:left;padding-left:14px">Nhân Viên</div>`;
+      DAYS.forEach(d => {
+        const isWeekend = d.key === 'Sat' || d.key === 'Sun';
+        html += `<div class="shift-header" style="${isWeekend ? 'color:var(--gold)' : ''}">${d.label}</div>`;
+      });
+
+      // Staff rows
+      staffToShow.forEach(staff => {
+        const staffShifts = allShifts.filter(s => s.staffId === staff.id);
+
+        // Staff name cell
+        html += `
       <div class="shift-staff-cell">
         <img src="${staff.image_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(staff.name)}&background=7C3AED&color=fff&size=60`}"
              style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid var(--border);flex-shrink:0"
@@ -297,152 +399,276 @@ function renderGrid() {
       </div>
     `;
 
-    // Day cells
-    DAYS.forEach(d => {
-      const dayShifts = staffShifts.filter(s => s.day === d.key);
-      const isWeekend = d.key === 'Sat' || d.key === 'Sun';
-      html += `<div class="shift-cell" style="${isWeekend ? 'background:rgba(245,158,11,0.04)' : ''}">`;
+        // Day cells
+        DAYS.forEach(d => {
+          const dayShifts = staffShifts.filter(s => s.day === d.key);
+          const isWeekend = d.key === 'Sat' || d.key === 'Sun';
+          html += `<div class="shift-cell" style="${isWeekend ? 'background:rgba(245,158,11,0.04)' : ''}">`;
 
-      dayShifts.forEach(shift => {
-        const cls = getShiftClass(shift.startTime);
-        html += `
+          dayShifts.forEach(shift => {
+            const cls = getShiftClass(shift.startTime);
+            html += `
           <div class="shift-block ${cls}" onclick="openEditModal('${shift.id}','${staff.id}','${d.key}','${shift.startTime}','${shift.endTime}')">
-            <span>${getShiftEmoji(shift.startTime)} ${shift.startTime.slice(0,5)}–${shift.endTime.slice(0,5)}</span>
+            <span>${getShiftEmoji(shift.startTime)} ${shift.startTime.slice(0, 5)}–${shift.endTime.slice(0, 5)}</span>
             <span onclick="event.stopPropagation();confirmDelete('${shift.id}','${staff.name}','${d.key}')" style="opacity:0.6;font-size:10px;cursor:pointer;padding:0 2px">✕</span>
           </div>
         `;
-      });
+          });
 
-      html += `
+          html += `
         <button class="add-shift-btn" onclick="openAddModal('${staff.id}','${d.key}')" title="Thêm ca">+</button>
       </div>`;
-    });
-  });
+        });
+      });
 
-  html += '</div>';
-  document.getElementById('shift-grid-wrapper').innerHTML = html;
+      html += '</div>';
+      document.getElementById('shift-grid-wrapper').innerHTML = html;
 
-  // Summary cards
-  const totalShifts = allShifts.length;
-  const staffWithShifts = [...new Set(allShifts.map(s => s.staffId))].length;
-  const weekendShifts = allShifts.filter(s => s.day === 'Sat' || s.day === 'Sun').length;
-  const morningCount = allShifts.filter(s => parseInt(s.startTime) < 12).length;
+      // Summary cards
+      const totalShifts = allShifts.length;
+      const staffWithShifts = [...new Set(allShifts.map(s => s.staffId))].length;
+      const weekendShifts = allShifts.filter(s => s.day === 'Sat' || s.day === 'Sun').length;
+      const morningCount = allShifts.filter(s => parseInt(s.startTime) < 12).length;
 
-  document.getElementById('summary-cards').innerHTML = `
+      document.getElementById('summary-cards').innerHTML = `
     <div class="stat-card purple"><div class="stat-icon purple">📅</div><div><div class="stat-label">Tổng Số Ca</div><div class="stat-value">${totalShifts}</div></div></div>
     <div class="stat-card teal"><div class="stat-icon teal">👥</div><div><div class="stat-label">Nhân Viên Có Ca</div><div class="stat-value">${staffWithShifts}/${allStaff.length}</div></div></div>
     <div class="stat-card gold"><div class="stat-icon gold">📆</div><div><div class="stat-label">Ca Cuối Tuần</div><div class="stat-value">${weekendShifts}</div></div></div>
     <div class="stat-card blue"><div class="stat-icon blue">🌅</div><div><div class="stat-label">Ca Sáng</div><div class="stat-value">${morningCount}</div></div></div>
   `;
-}
+    }
 
-async function loadAll() {
-  try {
-    [allShifts, allStaff] = await Promise.all([
-      API.getShifts(),
-      API.getAdminUsers({ role: 'doctor' })
-    ]);
+    let adminSwaps = [];
 
-    // Populate staff filter tabs
-    const tabsEl = document.getElementById('staff-filter-tabs');
-    tabsEl.innerHTML = `<button class="filter-tab ${!filterStaff ? 'active' : ''}" data-staff="">Tất Cả</button>` +
-      allStaff.map(s => `<button class="filter-tab ${filterStaff === s.id ? 'active' : ''}" data-staff="${s.id}">${s.name}</button>`).join('');
+    async function loadAll() {
+      try {
+        [allShifts, allStaff, adminSwaps] = await Promise.all([
+          API.getShifts(),
+          API.getAdminUsers({ role: 'doctor' }),
+          API.getShiftSwaps().catch(() => [])
+        ]);
 
-    tabsEl.querySelectorAll('.filter-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        tabsEl.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        filterStaff = tab.dataset.staff;
+        // Populate staff filter tabs
+        const tabsEl = document.getElementById('staff-filter-tabs');
+        tabsEl.innerHTML = `<button class="filter-tab ${!filterStaff ? 'active' : ''}" data-staff="">Tất Cả</button>` +
+          allStaff.map(s => `<button class="filter-tab ${filterStaff === s.id ? 'active' : ''}" data-staff="${s.id}">${s.name}</button>`).join('');
+
+        tabsEl.querySelectorAll('.filter-tab').forEach(tab => {
+          tab.addEventListener('click', () => {
+            tabsEl.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            filterStaff = tab.dataset.staff;
+            renderGrid();
+          });
+        });
+
+        // Populate staff select in modal
+        const sel = document.getElementById('shift-staff');
+        sel.innerHTML = '<option value="">-- Chọn nhân viên --</option>' +
+          allStaff.map(s => `<option value="${s.id}">${s.name} — ${s.specialty || 'Chuyên gia'}</option>`).join('');
+
         renderGrid();
-      });
+        renderAdminSwaps();
+      } catch (e) { Toast.error('Lỗi tải dữ liệu: ' + e.message); }
+    }
+
+    function renderAdminSwaps() {
+      const tbody = document.getElementById('admin-swaps-tbody');
+      if (!adminSwaps || adminSwaps.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:32px">Không có yêu cầu đổi ca nào</td></tr>`;
+        return;
+      }
+
+      const statusLabel = {
+        pending: '<span class="badge badge-pending">Chờ đồng nghiệp phản hồi</span>',
+        accepted: '<span class="badge badge-warning" style="background:rgba(245,158,11,0.2);color:var(--gold)">Chờ Admin duyệt</span>',
+        rejected: '<span class="badge badge-cancelled">Đồng nghiệp từ chối</span>',
+        approved: '<span class="badge badge-completed">Đã phê duyệt</span>',
+        declined: '<span class="badge badge-cancelled">Admin từ chối</span>'
+      };
+
+      tbody.innerHTML = adminSwaps.map(r => {
+        const dateStr = new Date(r.date).toLocaleDateString('vi-VN');
+        const shiftTime = `${r.shiftStartTime.slice(0, 5)}–${r.shiftEndTime.slice(0, 5)}`;
+
+        let detailsHtml = `
+      <div><strong>Ngày bận:</strong> ${dateStr}</div>
+      <div style="font-size:12px;color:var(--text-muted)">Ca: ${shiftTime} (Thứ ${getDayVi(r.shiftDay)})</div>
+    `;
+
+        if (r.targetDate && r.targetShiftId) {
+          const tgtDateStr = new Date(r.targetDate).toLocaleDateString('vi-VN');
+          const tgtShiftTime = `${r.targetShiftStartTime.slice(0, 5)}–${r.targetShiftEndTime.slice(0, 5)}`;
+          detailsHtml += `
+        <div style="margin-top:4px;padding-top:4px;border-top:1px dashed var(--border)">
+          <strong>Đổi ca chéo ngày:</strong> ${tgtDateStr}
+          <div style="font-size:12px;color:var(--text-muted)">Ca: ${tgtShiftTime} (Thứ ${getDayVi(r.targetShiftDay)})</div>
+        </div>
+      `;
+        } else {
+          detailsHtml += `<div style="font-size:12px;color:var(--purple-light)">↳ Chỉ nhờ trực hộ</div>`;
+        }
+
+        let actionsHtml = '—';
+        if (r.status === 'accepted') {
+          actionsHtml = `
+        <div style="display:flex;gap:6px;justify-content:flex-end">
+          <button class="btn btn-success btn-sm" onclick="handleAdminSwapDecision('${r.id}', 'approved')">Duyệt</button>
+          <button class="btn btn-danger btn-sm" onclick="handleAdminSwapDecision('${r.id}', 'declined')">Từ chối</button>
+        </div>
+      `;
+        }
+
+        return `
+      <tr>
+        <td style="padding:12px 8px">
+          <div style="font-weight:600;font-size:14px">${r.requesterName}</div>
+          <div style="font-size:12px;color:var(--text-muted)">${r.requesterSpecialty || 'Bác sĩ'}</div>
+        </td>
+        <td style="padding:12px 8px">
+          <div style="font-weight:600;font-size:14px">${r.targetName}</div>
+          <div style="font-size:12px;color:var(--text-muted)">${r.targetSpecialty || 'Bác sĩ'}</div>
+        </td>
+        <td style="padding:12px 8px;font-size:13px">${detailsHtml}</td>
+        <td style="padding:12px 8px;font-size:13px;max-width:200px;word-wrap:break-word">${r.reason || '—'}</td>
+        <td style="padding:12px 8px">${statusLabel[r.status] || r.status}</td>
+        <td style="padding:12px 8px;text-align:right">${actionsHtml}</td>
+      </tr>
+    `;
+      }).join('');
+    }
+
+    let pendingConfirmId = null;
+    let pendingConfirmAction = null;
+
+    function openConfirmActionModal(id, action) {
+      const text = action === 'approved' ? 'phê duyệt' : 'từ chối';
+      document.getElementById('confirm-action-message').textContent = `Bạn có chắc chắn muốn ${text} yêu cầu đổi ca này?`;
+      pendingConfirmId = id;
+      pendingConfirmAction = action;
+
+      const btn = document.getElementById('confirm-action-btn');
+      if (action === 'declined') {
+        btn.className = 'btn btn-danger';
+        btn.innerHTML = 'Từ chối';
+      } else {
+        btn.className = 'btn btn-success';
+        btn.innerHTML = 'Phê duyệt';
+      }
+
+      document.getElementById('confirm-action-modal').classList.add('open');
+    }
+
+    function closeConfirmActionModal() {
+      document.getElementById('confirm-action-modal').classList.remove('open');
+      pendingConfirmId = null;
+      pendingConfirmAction = null;
+    }
+
+    document.getElementById('confirm-action-btn').addEventListener('click', async () => {
+      if (!pendingConfirmId || !pendingConfirmAction) return;
+      const id = pendingConfirmId;
+      const action = pendingConfirmAction;
+      closeConfirmActionModal();
+
+      try {
+        await API.updateShiftSwapStatus(id, { status: action });
+        Toast.success('Cập nhật trạng thái thành công');
+        loadAll();
+      } catch (err) {
+        Toast.error('Không thể cập nhật: ' + err.message);
+      }
     });
 
-    // Populate staff select in modal
-    const sel = document.getElementById('shift-staff');
-    sel.innerHTML = '<option value="">-- Chọn nhân viên --</option>' +
-      allStaff.map(s => `<option value="${s.id}">${s.name} — ${s.specialty || 'Chuyên gia'}</option>`).join('');
-
-    renderGrid();
-  } catch(e) { Toast.error('Lỗi tải dữ liệu: ' + e.message); }
-}
-
-// ─── Modal: Add ───────────────────────────────────────────
-function openAddModal(staffId = '', day = '') {
-  document.getElementById('shift-id').value = '';
-  document.getElementById('shift-modal-title').textContent = 'Thêm Ca Làm Việc';
-  document.getElementById('shift-submit-btn').textContent = '💾 Thêm Ca';
-  document.getElementById('shift-staff').value = staffId;
-  document.getElementById('shift-day').value = day || 'Mon';
-  document.getElementById('shift-start').value = '08:00';
-  document.getElementById('shift-end').value = '17:00';
-  document.getElementById('shift-modal').classList.add('open');
-}
-
-// ─── Modal: Edit ──────────────────────────────────────────
-function openEditModal(id, staffId, day, start, end) {
-  document.getElementById('shift-id').value = id;
-  document.getElementById('shift-modal-title').textContent = 'Chỉnh Sửa Ca';
-  document.getElementById('shift-submit-btn').textContent = '💾 Cập Nhật';
-  document.getElementById('shift-staff').value = staffId;
-  document.getElementById('shift-day').value = day;
-  document.getElementById('shift-start').value = start.slice(0,5);
-  document.getElementById('shift-end').value = end.slice(0,5);
-  document.getElementById('shift-modal').classList.add('open');
-}
-
-function closeShiftModal() {
-  document.getElementById('shift-modal').classList.remove('open');
-}
-
-function setShiftTemplate(start, end) {
-  document.getElementById('shift-start').value = start;
-  document.getElementById('shift-end').value = end;
-}
-
-// ─── Submit ───────────────────────────────────────────────
-document.getElementById('shift-form').addEventListener('submit', async(e) => {
-  e.preventDefault();
-  const id = document.getElementById('shift-id').value;
-  const staffId   = document.getElementById('shift-staff').value;
-  const day       = document.getElementById('shift-day').value;
-  const startTime = document.getElementById('shift-start').value;
-  const endTime   = document.getElementById('shift-end').value;
-
-  if (startTime >= endTime) { Toast.warning('Giờ bắt đầu phải trước giờ kết thúc!'); return; }
-
-  try {
-    if (id) {
-      await API.updateShift(id, { startTime, endTime });
-      Toast.success('Đã cập nhật ca làm việc');
-    } else {
-      await API.createShift({ staffId, day, startTime, endTime });
-      Toast.success('Đã thêm ca làm việc');
+    function handleAdminSwapDecision(id, decision) {
+      openConfirmActionModal(id, decision);
     }
-    closeShiftModal();
+
+    function getDayVi(dayName) {
+      const map = { Mon: '2', Tue: '3', Wed: '4', Thu: '5', Fri: '6', Sat: '7', Sun: 'CN' };
+      return map[dayName] || dayName;
+    }
+
+    window.handleAdminSwapDecision = handleAdminSwapDecision;
+    window.closeConfirmActionModal = closeConfirmActionModal;
+
+    // ─── Modal: Add ───────────────────────────────────────────
+    function openAddModal(staffId = '', day = '') {
+      document.getElementById('shift-id').value = '';
+      document.getElementById('shift-modal-title').textContent = 'Thêm Ca Làm Việc';
+      document.getElementById('shift-submit-btn').textContent = '💾 Thêm Ca';
+      document.getElementById('shift-staff').value = staffId;
+      document.getElementById('shift-day').value = day || 'Mon';
+      document.getElementById('shift-start').value = '08:00';
+      document.getElementById('shift-end').value = '17:00';
+      document.getElementById('shift-modal').classList.add('open');
+    }
+
+    // ─── Modal: Edit ──────────────────────────────────────────
+    function openEditModal(id, staffId, day, start, end) {
+      document.getElementById('shift-id').value = id;
+      document.getElementById('shift-modal-title').textContent = 'Chỉnh Sửa Ca';
+      document.getElementById('shift-submit-btn').textContent = '💾 Cập Nhật';
+      document.getElementById('shift-staff').value = staffId;
+      document.getElementById('shift-day').value = day;
+      document.getElementById('shift-start').value = start.slice(0, 5);
+      document.getElementById('shift-end').value = end.slice(0, 5);
+      document.getElementById('shift-modal').classList.add('open');
+    }
+
+    function closeShiftModal() {
+      document.getElementById('shift-modal').classList.remove('open');
+    }
+
+    function setShiftTemplate(start, end) {
+      document.getElementById('shift-start').value = start;
+      document.getElementById('shift-end').value = end;
+    }
+
+    // ─── Submit ───────────────────────────────────────────────
+    document.getElementById('shift-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('shift-id').value;
+      const staffId = document.getElementById('shift-staff').value;
+      const day = document.getElementById('shift-day').value;
+      const startTime = document.getElementById('shift-start').value;
+      const endTime = document.getElementById('shift-end').value;
+
+      if (startTime >= endTime) { Toast.warning('Giờ bắt đầu phải trước giờ kết thúc!'); return; }
+
+      try {
+        if (id) {
+          await API.updateShift(id, { startTime, endTime });
+          Toast.success('Đã cập nhật ca làm việc');
+        } else {
+          await API.createShift({ staffId, day, startTime, endTime });
+          Toast.success('Đã thêm ca làm việc');
+        }
+        closeShiftModal();
+        loadAll();
+      } catch (e) { Toast.error(e.message); }
+    });
+
+    // ─── Delete ───────────────────────────────────────────────
+    function confirmDelete(id, staffName, day) {
+      deleteTarget = id;
+      const dayLabel = DAYS.find(d => d.key === day)?.label || day;
+      document.getElementById('delete-confirm-text').textContent =
+        `Xóa ca làm việc ${dayLabel} của ${staffName}?`;
+      document.getElementById('delete-modal').classList.add('open');
+    }
+
+    document.getElementById('confirm-delete-btn').addEventListener('click', async () => {
+      try {
+        await API.deleteShift(deleteTarget);
+        document.getElementById('delete-modal').classList.remove('open');
+        Toast.success('Đã xóa ca làm việc');
+        loadAll();
+      } catch (e) { Toast.error(e.message); }
+    });
+
     loadAll();
-  } catch(e) { Toast.error(e.message); }
-});
-
-// ─── Delete ───────────────────────────────────────────────
-function confirmDelete(id, staffName, day) {
-  deleteTarget = id;
-  const dayLabel = DAYS.find(d => d.key === day)?.label || day;
-  document.getElementById('delete-confirm-text').textContent =
-    `Xóa ca làm việc ${dayLabel} của ${staffName}?`;
-  document.getElementById('delete-modal').classList.add('open');
-}
-
-document.getElementById('confirm-delete-btn').addEventListener('click', async() => {
-  try {
-    await API.deleteShift(deleteTarget);
-    document.getElementById('delete-modal').classList.remove('open');
-    Toast.success('Đã xóa ca làm việc');
-    loadAll();
-  } catch(e) { Toast.error(e.message); }
-});
-
-loadAll();
-</script>
+  </script>
 </body>
-</html>
 
+</html>

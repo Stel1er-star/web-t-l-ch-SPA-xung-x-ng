@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="../css/variables.css">
   <link rel="stylesheet" href="../css/global.css">
   <link rel="stylesheet" href="../css/components.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 
 <body>
@@ -89,6 +90,7 @@
           <input type="text" id="search-input" class="form-input" placeholder="Tìm kiếm tên, dịch vụ..." style="width:200px;padding:7px 12px;font-size:13px">
           <input type="date" id="filter-date" class="form-input" style="width:auto;padding:7px 12px;font-size:13px">
           <button class="btn btn-ghost btn-sm" onclick="refreshAll()">🔄 Làm Mới</button>
+          <button class="btn btn-ghost btn-sm" id="export-pdf-btn" onclick="exportAdminPDF()">📄 Xuất PDF</button>
         </div>
       </div>
       <div class="page-container">
@@ -220,6 +222,88 @@
     });
 
     loadAppts();
+
+    // ── Xuất PDF Admin ───────────────────────────────────
+    function exportAdminPDF() {
+      if (!allAppts.length) { Toast.warning('Không có dữ liệu để xuất!'); return; }
+      const filtered = allAppts.filter(a => {
+        const matchStatus = filterStatus ? a.status === filterStatus : true;
+        const matchSearch = searchQuery ? (
+          (a.customerName||'').toLowerCase().includes(searchQuery)||
+          (a.staffName||'').toLowerCase().includes(searchQuery)||
+          (a.serviceName||'').toLowerCase().includes(searchQuery)
+        ) : true;
+        return matchStatus && matchSearch;
+      });
+      if (!filtered.length) { Toast.warning('Không có lịch hẹn nào đang hiển thị!'); return; }
+
+      const statusLabel = { pending:'Chờ XN', confirmed:'Đã XN', 'in-progress':'Đang Khám', completed:'Hoàn Thành', cancelled:'Đã Hủy' };
+      const statusColor = { pending:'#F59E0B', confirmed:'#10B981', 'in-progress':'#3B82F6', completed:'#7C3AED', cancelled:'#EF4444' };
+      const dateFilter = document.getElementById('filter-date').value;
+
+      const rows = filtered.map((a, i) => `
+        <tr style="background:${i%2===0?'#f9fafb':'#fff'}">
+          <td style="padding:8px 10px;font-weight:600;color:#7C3AED">${String(i+1).padStart(2,'0')}</td>
+          <td style="padding:8px 10px;font-weight:600">${a.customerName}</td>
+          <td style="padding:8px 10px">${a.serviceIcon||''} ${a.serviceName}<br><span style="font-size:11px;color:#9CA3AF">${a.serviceCategory==='medical'?'Y Tế':'Spa'}</span></td>
+          <td style="padding:8px 10px;font-size:12px">${a.staffName}<br><span style="color:#9CA3AF;font-size:11px">${a.staffSpecialty||''}</span></td>
+          <td style="padding:8px 10px;font-size:12px;white-space:nowrap">${new Date(a.date).toLocaleDateString('vi-VN')}<br>🕐 ${String(a.time||'').slice(0,5)}</td>
+          <td style="padding:8px 10px;font-weight:600;color:#D97706;white-space:nowrap">${Number(a.price).toLocaleString('vi-VN')}đ</td>
+          <td style="padding:8px 10px"><span style="background:${statusColor[a.status]}22;color:${statusColor[a.status]};padding:2px 8px;border-radius:12px;font-size:11px;font-weight:600">${statusLabel[a.status]||a.status}</span></td>
+        </tr>`).join('');
+
+      const totalRevenue = filtered.filter(a=>a.status!=='cancelled').reduce((s,a)=>s+(a.price||0),0);
+
+      const html = `<div style="font-family:'Inter',sans-serif;color:#1a1a2e;padding:24px">
+        <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #7C3AED;padding-bottom:14px;margin-bottom:20px">
+          <div><div style="font-size:24px;font-weight:700;color:#7C3AED">🌿 SpaProMax</div><div style="font-size:12px;color:#666">Hệ thống quản lý Spa & Y tế</div></div>
+          <div style="text-align:right"><div style="font-weight:600;font-size:15px">BÁO CÁO LỊCH HẸN</div>
+            <div style="font-size:12px;color:#666">${dateFilter?'Ngày: '+new Date(dateFilter).toLocaleDateString('vi-VN'):'Tất cả ngày'} • ${filterStatus?statusLabel[filterStatus]:'Tất cả trạng thái'}</div>
+            <div style="font-size:12px;color:#666">Xuất lúc: ${new Date().toLocaleString('vi-VN')}</div></div></div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="background:#7C3AED;color:#fff">
+            <th style="padding:8px 10px;text-align:left">#</th>
+            <th style="padding:8px 10px;text-align:left">Khách Hàng</th>
+            <th style="padding:8px 10px;text-align:left">Dịch Vụ</th>
+            <th style="padding:8px 10px;text-align:left">Bác Sĩ / KTV</th>
+            <th style="padding:8px 10px;text-align:left">Thời Gian</th>
+            <th style="padding:8px 10px;text-align:left">Giá</th>
+            <th style="padding:8px 10px;text-align:left">Trạng Thái</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+          <tfoot><tr style="background:#F3F4F6;font-weight:700">
+            <td colspan="5" style="padding:8px 10px">TỔNG CỘNG (${filtered.length} lịch)</td>
+            <td colspan="2" style="padding:8px 10px;color:#7C3AED">${Number(totalRevenue).toLocaleString('vi-VN')}đ</td>
+          </tr></tfoot>
+        </table>
+        <div style="margin-top:20px;text-align:center;font-size:11px;color:#999;border-top:1px solid #e5e7eb;padding-top:12px">SpaProMax — Tài liệu tự động • support@spapromax.vn</div>
+      </div>`;
+
+      const el = document.createElement('div');
+      el.innerHTML = html;
+      document.body.appendChild(el);
+
+      const btn = document.getElementById('export-pdf-btn');
+      btn.textContent = '⏳ Đang tạo...';
+      btn.disabled = true;
+
+      const fileName = `SpaProMax_Admin_LichHen_${new Date().toISOString().slice(0,10)}.pdf`;
+      html2pdf().set({
+        margin:[8,8,8,8],
+        image:{type:'jpeg',quality:0.98}, html2canvas:{scale:2,useCORS:true},
+        jsPDF:{unit:'mm',format:'a4',orientation:'landscape'}
+      }).from(el).output('blob').then(blob => {
+        document.body.removeChild(el);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = fileName;
+        document.body.appendChild(a); a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        btn.textContent='📄 Xuất PDF'; btn.disabled=false;
+        Toast.success('Xuất PDF thành công! 📄');
+      }).catch(()=>{ document.body.removeChild(el); btn.textContent='📄 Xuất PDF'; btn.disabled=false; Toast.error('Lỗi tạo PDF!'); });
+    }
   </script>
 </body>
 

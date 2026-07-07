@@ -78,17 +78,31 @@ exports.getAllUsers = async (req, res) => {
 exports.createUser = async (req, res) => {
   try {
     const { username, password, role, name, email, phone, specialty, bio } = req.body;
-    if (!username || !password || !name) return res.status(400).json({ error: 'Thiếu thông tin bắt buộc' });
-    if (await UserModel.existsUsername(username)) return res.status(409).json({ error: 'Username đã tồn tại' });
+    const normalizedUsername = (username || '').trim();
+    if (!normalizedUsername || !password || !name) return res.status(400).json({ error: 'Thiếu thông tin bắt buộc' });
+    if (normalizedUsername.length < 6 || normalizedUsername.length > 20) {
+      return res.status(400).json({ error: 'Tên đăng nhập phải từ 6 đến 20 ký tự' });
+    }
+    if (await UserModel.existsUsername(normalizedUsername)) return res.status(409).json({ error: 'Username đã tồn tại' });
     const id = UserModel.generateId(role || 'customer');
-    const user = await UserModel.create({ id, username, password, role, name, email, phone, specialty, bio });
+    const user = await UserModel.create({ id, username: normalizedUsername, password, role, name, email, phone, specialty, bio });
     res.status(201).json(user);
   } catch (err) { res.status(500).json({ error: 'Lỗi server' }); }
 };
 
 exports.updateUser = async (req, res) => {
   try {
-    const user = await UserModel.update(req.params.id, req.body);
+    const updateData = { ...req.body };
+    if (updateData.username !== undefined) {
+      updateData.username = updateData.username.trim();
+      if (updateData.username.length < 6 || updateData.username.length > 20) {
+        return res.status(400).json({ error: 'Tên đăng nhập phải từ 6 đến 20 ký tự' });
+      }
+      if (await UserModel.existsUsername(updateData.username, req.params.id)) {
+        return res.status(409).json({ error: 'Username đã tồn tại' });
+      }
+    }
+    const user = await UserModel.update(req.params.id, updateData);
     if (!user) return res.status(404).json({ error: 'Không tìm thấy' });
     res.json(user);
   } catch (err) { res.status(500).json({ error: 'Lỗi server' }); }
@@ -97,8 +111,11 @@ exports.updateUser = async (req, res) => {
 exports.deleteUser = async (req, res) => {
   try {
     await UserModel.delete(req.params.id);
-    res.json({ message: 'Đã vô hiệu hóa tài khoản' });
-  } catch (err) { res.status(500).json({ error: 'Lỗi server' }); }
+    res.json({ message: 'Đã xóa tài khoản' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Lỗi server' });
+  }
 };
 
 // Revenue Reports

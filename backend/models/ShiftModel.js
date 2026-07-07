@@ -20,14 +20,42 @@ class ShiftModel {
   }
 
   static async isWorking(staffId, date) {
-    // Convert JS date to day abbreviation
+    // Parse date string safely (avoid UTC timezone offset issue)
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    const dayName = days[new Date(date).getDay()];
-    const [rows] = await db.query(
-      'SELECT * FROM Shifts WHERE staffId = ? AND day = ?',
-      [staffId, dayName]
+    const parts = date.split('-').map(Number);
+    const dayName = days[new Date(parts[0], parts[1] - 1, parts[2]).getDay()];
+
+    // 1. Get normal shifts NOT swapped away on this date
+    const [normalShifts] = await db.query(
+      `SELECT s.* FROM Shifts s
+       WHERE s.staffId = ? AND s.day = ?
+         AND s.id NOT IN (
+           SELECT shiftId FROM ShiftSwaps
+           WHERE status = 'approved' AND requesterId = ? AND date = ?
+         )
+         AND s.id NOT IN (
+           SELECT targetShiftId FROM ShiftSwaps
+           WHERE status = 'approved' AND targetId = ? AND targetDate = ? AND targetShiftId IS NOT NULL
+         )`,
+      [staffId, dayName, staffId, date, staffId, date]
     );
-    return { working: rows.length > 0, shifts: rows };
+
+    // 2. Get covered shifts from swap agreements on this date
+    const [coveredShifts] = await db.query(
+      `SELECT s.id, s.day, s.startTime, s.endTime
+       FROM ShiftSwaps sw
+       JOIN Shifts s ON s.id = sw.shiftId
+       WHERE sw.status = 'approved' AND sw.targetId = ? AND sw.date = ?
+       UNION
+       SELECT s.id, s.day, s.startTime, s.endTime
+       FROM ShiftSwaps sw
+       JOIN Shifts s ON s.id = sw.targetShiftId
+       WHERE sw.status = 'approved' AND sw.requesterId = ? AND sw.targetDate = ? AND sw.targetShiftId IS NOT NULL`,
+      [staffId, date, staffId, date]
+    );
+
+    const activeShifts = [...normalShifts, ...coveredShifts];
+    return { working: activeShifts.length > 0, shifts: activeShifts };
   }
 
   /**
