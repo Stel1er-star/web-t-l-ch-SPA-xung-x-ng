@@ -205,7 +205,7 @@
       <td>
         <div style="display:flex;gap:6px">
           <button class="btn btn-ghost btn-sm" onclick="openEditModal(${JSON.stringify(u).replace(/"/g, '&quot;')})">✏️</button>
-          ${u.is_active ? `<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}','${(u.name || '').replace(/'/g, "\\'")}')">�️</button>` : ''}
+          ${u.is_active ? `<button class="btn btn-danger btn-sm" onclick="deleteUser('${u.id}','${(u.name || '').replace(/'/g, "\\'")}')">🗑️</button>` : ''}
         </div>
       </td>
     </tr>
