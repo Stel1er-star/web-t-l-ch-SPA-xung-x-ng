@@ -633,7 +633,14 @@ function populateDoctorSelect() {
   if (!select) return;
   select.innerHTML = '<option value="">-- Chọn bác sĩ/KTV --</option>';
   
-  const others = doctors.filter(d => d.id !== user.id);
+  const myDoc = doctors.find(d => d.id === user.id);
+  const myServiceIds = myDoc && myDoc.serviceIds ? myDoc.serviceIds : [];
+  
+  const others = doctors.filter(d => {
+    if (d.id === user.id) return false;
+    const theirServiceIds = d.serviceIds || [];
+    return myServiceIds.some(id => theirServiceIds.includes(id));
+  });
   others.forEach(d => {
     const option = document.createElement('option');
     option.value = d.id;

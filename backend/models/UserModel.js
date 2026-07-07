@@ -27,13 +27,19 @@ class UserModel {
   static async findDoctors() {
     const [rows] = await db.query(
       `SELECT u.id, u.name, u.specialty, u.bio, u.image_url,
-              AVG(r.rating) as avgRating, COUNT(r.id) as reviewCount
+              AVG(r.rating) as avgRating, COUNT(DISTINCT r.id) as reviewCount,
+              GROUP_CONCAT(DISTINCT ss.serviceId) as serviceIds
        FROM Users u
        LEFT JOIN Reviews r ON r.staffId = u.id
+       LEFT JOIN ServiceStaff ss ON ss.staffId = u.id
        WHERE u.role = 'doctor' AND u.is_active = 1
        GROUP BY u.id ORDER BY u.name`
     );
-    return rows;
+    // Convert serviceIds from string "s1,s2" to array ['s1', 's2']
+    return rows.map(r => ({
+      ...r,
+      serviceIds: r.serviceIds ? r.serviceIds.split(',') : []
+    }));
   }
 
   static async create({ id, username, password, role, name, email, phone, specialty, bio, image_url }) {
