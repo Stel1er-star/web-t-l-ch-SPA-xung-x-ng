@@ -64,7 +64,8 @@
           </div>
           <div class="form-group">
             <label class="form-label">Số điện thoại</label>
-            <input type="tel" id="u-phone" class="form-input">
+            <input type="tel" id="u-phone" class="form-input" placeholder="Ví dụ: 0901234567" oninput="clearPhoneError()">
+            <div id="phone-error" style="display:none;color:#f87171;font-size:12px;margin-top:4px">Số điện thoại không đúng định dạng (phải bắt đầu bằng 0 và đủ 10 số)</div>
           </div>
         </div>
         <div class="form-group" id="specialty-field">
@@ -259,6 +260,7 @@
       document.getElementById('user-modal').classList.remove('open');
       clearUsernameError();
       clearPasswordError();
+      clearPhoneError();
       // Reset icon mắt về mặc định
       const pwdInput = document.getElementById('u-password');
       const pwdToggle = document.getElementById('pwd-toggle');
@@ -307,6 +309,25 @@
       document.getElementById('u-password').style.boxShadow = '';
     }
 
+    function showPhoneError() {
+      const el = document.getElementById('phone-error');
+      el.style.display = 'block';
+      document.getElementById('u-phone').style.borderColor = '#f87171';
+      document.getElementById('u-phone').style.boxShadow = '0 0 0 2px rgba(248,113,113,0.25)';
+    }
+
+    function clearPhoneError() {
+      const el = document.getElementById('phone-error');
+      el.style.display = 'none';
+      document.getElementById('u-phone').style.borderColor = '';
+      document.getElementById('u-phone').style.boxShadow = '';
+    }
+
+    function validatePhone(phone) {
+      if (!phone) return true; // Không bắt buộc
+      return /^0\d{9}$/.test(phone);
+    }
+
     document.getElementById('user-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const username = document.getElementById('u-username').value.trim();
@@ -325,12 +346,19 @@
         return;
       }
 
+      const phoneVal = document.getElementById('u-phone').value.trim();
+      if (!validatePhone(phoneVal)) {
+        showPhoneError();
+        document.getElementById('u-phone').focus();
+        return;
+      }
+
       const body = {
         name: document.getElementById('u-name').value,
         username,
         role: document.getElementById('u-role').value,
         email: document.getElementById('u-email').value || null,
-        phone: document.getElementById('u-phone').value || null,
+        phone: phoneVal || null,
         specialty: document.getElementById('u-specialty').value || null,
       };
       const pwd = document.getElementById('u-password').value;
