@@ -15,6 +15,20 @@ exports.create = async (req, res) => {
       return res.status(400).json({ error: 'Bạn không thể tự gửi yêu cầu đổi ca cho chính mình' });
     }
 
+    // Check if both doctors share at least one service
+    const [sharedServices] = await db.query(
+      `SELECT serviceId 
+       FROM ServiceStaff 
+       WHERE staffId IN (?, ?) 
+       GROUP BY serviceId 
+       HAVING COUNT(DISTINCT staffId) = 2`,
+      [requesterId, targetId]
+    );
+
+    if (sharedServices.length === 0) {
+      return res.status(400).json({ error: 'Chỉ các bác sĩ có cùng dịch vụ phụ trách mới có thể đổi ca cho nhau' });
+    }
+
     const id = ShiftSwapModel.generateId();
     const swap = await ShiftSwapModel.create({
       id,
@@ -166,7 +180,7 @@ exports.updateStatus = async (req, res) => {
       );
     } else if (status === 'approved') {
       // APPROVED -> DO ACTUAL SWAP WORK
-      
+
       // 1. Reassign appointments for date (requester -> target)
       // Get affected appointments first to notify customers
       const [apptRequester] = await connection.query(
