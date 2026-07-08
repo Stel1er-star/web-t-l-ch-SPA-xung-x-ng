@@ -53,7 +53,11 @@ app.use((err, req, res, next) => {
 });
 
 // ─── Start ───────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`\n🚀 SpaProMax API running on http://localhost:${PORT}`);
-  console.log(`📋 Health check: http://localhost:${PORT}/api/health\n`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`\n🚀 SpaProMax API running on http://localhost:${PORT}`);
+    console.log(`📋 Health check: http://localhost:${PORT}/api/health\n`);
+  });
+}
+
+module.exports = app;
