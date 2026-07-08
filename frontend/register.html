@@ -1,132 +1,220 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Đăng Ký — SpaProMax</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/global.css">
   <link rel="stylesheet" href="css/components.css">
   <link rel="stylesheet" href="css/auth.css">
 </head>
+
 <body>
-<div id="toast-container"></div>
-<div class="auth-wrapper">
-  <div class="auth-visual">
-    <img src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=900&h=1200&fit=crop" alt="Spa" class="auth-visual-img">
-    <div class="auth-visual-overlay">
-      <div class="auth-brand"><div class="auth-brand-icon">🌿</div><span class="auth-brand-name">SpaProMax</span></div>
-      <h2 class="auth-visual-title">Bắt Đầu<br>Hành Trình!</h2>
-      <p class="auth-visual-desc">Tạo tài khoản miễn phí và trải nghiệm dịch vụ spa & y tế đẳng cấp ngay hôm nay.</p>
-      <div class="auth-features">
-        <div class="auth-feature"><div class="auth-feature-icon">🎁</div><span>Ưu đãi đặc biệt cho khách hàng mới</span></div>
-        <div class="auth-feature"><div class="auth-feature-icon">⚡</div><span>Đặt lịch nhanh chóng, xác nhận ngay</span></div>
-        <div class="auth-feature"><div class="auth-feature-icon">🔔</div><span>Nhắc nhở lịch hẹn tự động</span></div>
+  <div id="toast-container"></div>
+  <div class="auth-wrapper">
+    <div class="auth-visual">
+      <img src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=900&h=1200&fit=crop" alt="Spa"
+        class="auth-visual-img">
+      <div class="auth-visual-overlay">
+        <div class="auth-brand">
+          <div class="auth-brand-icon">🌿</div><span class="auth-brand-name">SpaProMax</span>
+        </div>
+        <h2 class="auth-visual-title">Bắt Đầu<br>Hành Trình!</h2>
+        <p class="auth-visual-desc">Tạo tài khoản miễn phí và trải nghiệm dịch vụ spa & y tế đẳng cấp ngay hôm nay.</p>
+        <div class="auth-features">
+          <div class="auth-feature">
+            <div class="auth-feature-icon">🎁</div><span>Ưu đãi đặc biệt cho khách hàng mới</span>
+          </div>
+          <div class="auth-feature">
+            <div class="auth-feature-icon">⚡</div><span>Đặt lịch nhanh chóng, xác nhận ngay</span>
+          </div>
+          <div class="auth-feature">
+            <div class="auth-feature-icon">🔔</div><span>Nhắc nhở lịch hẹn tự động</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-form-panel">
+      <div class="auth-form-box">
+        <div style="margin-bottom:28px">
+          <a href="index.html"
+            style="display:flex;align-items:center;gap:8px;color:var(--text-muted);font-size:13px;margin-bottom:28px">←
+            Về trang chủ</a>
+          <h1 class="auth-title font-heading">Đăng Ký</h1>
+          <p class="auth-subtitle">Đã có tài khoản? <a href="login.html"
+              style="color:var(--purple-lighter);font-weight:600">Đăng nhập</a></p>
+        </div>
+
+        <div class="auth-error" id="auth-error"></div>
+
+        <form class="auth-form" id="register-form">
+          <div class="form-group">
+            <label class="form-label">Họ và tên *</label>
+            <div class="input-wrapper"><span class="input-icon">📝</span>
+              <input type="text" id="name" class="form-input" placeholder="Nguyễn Văn A" required>
+            </div>
+          </div>
+          <div class="grid-2" style="gap:12px">
+            <div class="form-group">
+              <label class="form-label">Tên đăng nhập *</label>
+              <div class="input-wrapper"><span class="input-icon">👤</span>
+                <input type="text" id="username" class="form-input" placeholder="username" minlength="6" maxlength="20"
+                  required oninput="clearFieldError('username', 'username-error')">
+              </div>
+              <div id="username-error" style="display:none;color:#f87171;font-size:12px;margin-top:4px"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Số điện thoại</label>
+              <div class="input-wrapper"><span class="input-icon">📞</span>
+                <input type="tel" id="phone" class="form-input" placeholder="0900 000 000" oninput="clearFieldError('phone', 'phone-error')">
+              </div>
+              <div id="phone-error" style="display:none;color:#f87171;font-size:12px;margin-top:4px"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <div class="input-wrapper"><span class="input-icon">✉️</span>
+              <input type="email" id="email" class="form-input" placeholder="you@email.com" oninput="clearFieldError('email', 'email-error')">
+            </div>
+            <div id="email-error" style="display:none;color:#f87171;font-size:12px;margin-top:4px"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mật khẩu *</label>
+            <div class="input-wrapper"><span class="input-icon">🔒</span>
+              <input type="password" id="password" class="form-input" placeholder="Ít nhất 6 ký tự, 1 hoa, 1 ký tự đặc biệt" required oninput="clearFieldError('password', 'password-error')">
+              <span class="input-toggle" id="toggle-pwd">👁️</span>
+            </div>
+            <div id="password-error" style="display:none;color:#f87171;font-size:12px;margin-top:4px"></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Xác nhận mật khẩu *</label>
+            <div class="input-wrapper"><span class="input-icon">🔒</span>
+              <input type="password" id="confirm-password" class="form-input" placeholder="Nhập lại mật khẩu" required oninput="clearFieldError('confirm-password', 'confirm-password-error')">
+            </div>
+            <div id="confirm-password-error" style="display:none;color:#f87171;font-size:12px;margin-top:4px"></div>
+          </div>
+
+          <div style="font-size:12px;color:var(--text-muted);line-height:1.5">
+            Bằng cách đăng ký, bạn đồng ý với <a style="color:var(--purple-lighter)">Điều khoản sử dụng</a> và <a
+              style="color:var(--purple-lighter)">Chính sách bảo mật</a>.
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-full btn-lg" id="register-btn">
+            🌿 Tạo Tài Khoản
+          </button>
+        </form>
+
+        <div class="auth-switch">Đã có tài khoản? <a href="login.html">Đăng nhập</a></div>
       </div>
     </div>
   </div>
 
-  <div class="auth-form-panel">
-    <div class="auth-form-box">
-      <div style="margin-bottom:28px">
-        <a href="index.html" style="display:flex;align-items:center;gap:8px;color:var(--text-muted);font-size:13px;margin-bottom:28px">← Về trang chủ</a>
-        <h1 class="auth-title font-heading">Đăng Ký</h1>
-        <p class="auth-subtitle">Đã có tài khoản? <a href="login.html" style="color:var(--purple-lighter);font-weight:600">Đăng nhập</a></p>
-      </div>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    if (Auth.isLoggedIn()) Auth.redirectToDashboard();
 
-      <div class="auth-error" id="auth-error"></div>
+    function showFieldError(inputId, errorId, msg) {
+      const el = document.getElementById(errorId);
+      el.textContent = '⚠️ ' + msg;
+      el.style.display = 'block';
+      const input = document.getElementById(inputId);
+      if (input) {
+        input.style.borderColor = '#f87171';
+        input.style.boxShadow = '0 0 0 2px rgba(248,113,113,0.25)';
+      }
+    }
 
-      <form class="auth-form" id="register-form">
-        <div class="form-group">
-          <label class="form-label">Họ và tên *</label>
-          <div class="input-wrapper"><span class="input-icon">📝</span>
-            <input type="text" id="name" class="form-input" placeholder="Nguyễn Văn A" required></div>
-        </div>
-        <div class="grid-2" style="gap:12px">
-          <div class="form-group">
-            <label class="form-label">Tên đăng nhập *</label>
-            <div class="input-wrapper"><span class="input-icon">👤</span>
-              <input type="text" id="username" class="form-input" placeholder="username" minlength="6" maxlength="20" required></div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Số điện thoại</label>
-            <div class="input-wrapper"><span class="input-icon">📞</span>
-              <input type="tel" id="phone" class="form-input" placeholder="0900 000 000"></div>
-          </div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Email</label>
-          <div class="input-wrapper"><span class="input-icon">✉️</span>
-            <input type="email" id="email" class="form-input" placeholder="you@email.com"></div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Mật khẩu *</label>
-          <div class="input-wrapper"><span class="input-icon">🔒</span>
-            <input type="password" id="password" class="form-input" placeholder="Ít nhất 6 ký tự" required>
-            <span class="input-toggle" id="toggle-pwd">👁️</span></div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Xác nhận mật khẩu *</label>
-          <div class="input-wrapper"><span class="input-icon">🔒</span>
-            <input type="password" id="confirm-password" class="form-input" placeholder="Nhập lại mật khẩu" required></div>
-        </div>
+    function clearFieldError(inputId, errorId) {
+      const el = document.getElementById(errorId);
+      if (el) el.style.display = 'none';
+      const input = document.getElementById(inputId);
+      if (input) {
+        input.style.borderColor = '';
+        input.style.boxShadow = '';
+      }
+    }
 
-        <div style="font-size:12px;color:var(--text-muted);line-height:1.5">
-          Bằng cách đăng ký, bạn đồng ý với <a style="color:var(--purple-lighter)">Điều khoản sử dụng</a> và <a style="color:var(--purple-lighter)">Chính sách bảo mật</a>.
-        </div>
-
-        <button type="submit" class="btn btn-primary btn-full btn-lg" id="register-btn">
-          🌿 Tạo Tài Khoản
-        </button>
-      </form>
-
-      <div class="auth-switch">Đã có tài khoản? <a href="login.html">Đăng nhập</a></div>
-    </div>
-  </div>
-</div>
-
-<script src="js/api.js"></script>
-<script src="js/auth.js"></script>
-<script>
-if (Auth.isLoggedIn()) Auth.redirectToDashboard();
-
-document.getElementById('toggle-pwd').addEventListener('click', () => {
-  const p = document.getElementById('password');
-  p.type = p.type === 'password' ? 'text' : 'password';
-});
-
-document.getElementById('register-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const btn = document.getElementById('register-btn');
-  const errEl = document.getElementById('auth-error');
-  const username = document.getElementById('username').value.trim();
-  const pwd = document.getElementById('password').value;
-  const cpwd = document.getElementById('confirm-password').value;
-
-  if (username.length < 6 || username.length > 20) {
-    errEl.textContent = 'Tên đăng nhập phải từ 6 đến 20 ký tự!';
-    errEl.classList.add('show');
-    return;
-  }
-  if (pwd !== cpwd) { errEl.textContent = 'Mật khẩu xác nhận không khớp!'; errEl.classList.add('show'); return; }
-
-  btn.disabled = true; btn.textContent = 'Đang tạo tài khoản...'; errEl.classList.remove('show');
-  try {
-    const { token, user } = await API.register({
-      username,
-      password: pwd, name: document.getElementById('name').value.trim(),
-      email: document.getElementById('email').value.trim(),
-      phone: document.getElementById('phone').value.trim()
+    document.getElementById('toggle-pwd').addEventListener('click', () => {
+      const p = document.getElementById('password');
+      p.type = p.type === 'password' ? 'text' : 'password';
     });
-    Auth.login(token, user);
-    Toast.success(`Chào mừng ${user.name}! 🎉`);
-    setTimeout(() => Auth.redirectToDashboard(), 800);
-  } catch (err) {
-    errEl.textContent = err.message || 'Đăng ký thất bại';
-    errEl.classList.add('show');
-    btn.disabled = false; btn.textContent = '🌿 Tạo Tài Khoản';
-  }
-});
-</script>
+
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('register-btn');
+      const errEl = document.getElementById('auth-error');
+      const username = document.getElementById('username').value.trim();
+      const pwd = document.getElementById('password').value;
+      const cpwd = document.getElementById('confirm-password').value;
+
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+
+      let hasError = false;
+
+      if (username.length < 6 || username.length > 20) {
+        showFieldError('username', 'username-error', 'Tên đăng nhập phải từ 6 đến 20 ký tự.');
+        hasError = true;
+      }
+
+      if (phone && !/^0\d{9}$/.test(phone)) {
+        showFieldError('phone', 'phone-error', 'Số điện thoại phải bắt đầu bằng 0 và đủ 10 số.');
+        hasError = true;
+      }
+
+      if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showFieldError('email', 'email-error', 'Email không đúng định dạng.');
+        hasError = true;
+      }
+
+      if (pwd.length < 6) {
+        showFieldError('password', 'password-error', 'Mật khẩu phải có ít nhất 6 ký tự.');
+        hasError = true;
+      } else if (!/[A-Z]/.test(pwd)) {
+        showFieldError('password', 'password-error', 'Mật khẩu phải chứa ít nhất 1 chữ cái in hoa.');
+        hasError = true;
+      } else if (!/[!@#$%^&*()_+\-=\[\]{};\':"|,.<>\/?`~\\]/.test(pwd)) {
+        showFieldError('password', 'password-error', 'Mật khẩu phải chứa ít nhất 1 ký tự đặc biệt (ví dụ: @, #, !, ...).');
+        hasError = true;
+      }
+
+      if (pwd !== cpwd) {
+        showFieldError('confirm-password', 'confirm-password-error', 'Mật khẩu xác nhận không khớp!');
+        hasError = true;
+      }
+
+      if (hasError) return;
+
+      btn.disabled = true; btn.textContent = 'Đang tạo tài khoản...'; errEl.classList.remove('show');
+      try {
+        const { token, user } = await API.register({
+          username,
+          password: pwd, name: document.getElementById('name').value.trim(),
+          email: document.getElementById('email').value.trim(),
+          phone: document.getElementById('phone').value.trim()
+        });
+        Auth.login(token, user);
+        Toast.success(`Chào mừng ${user.name}! 🎉`);
+        setTimeout(() => Auth.redirectToDashboard(), 800);
+      } catch (err) {
+        if (err.message && (err.message.toLowerCase().includes('username') || err.message.toLowerCase().includes('tên đăng nhập') || err.message.toLowerCase().includes('already'))) {
+          showFieldError('username', 'username-error', 'Tên đăng nhập này đã được sử dụng');
+          document.getElementById('username').focus();
+        } else {
+          errEl.textContent = err.message || 'Đăng ký thất bại';
+          errEl.classList.add('show');
+        }
+        btn.disabled = false; btn.textContent = '🌿 Tạo Tài Khoản';
+      }
+    });
+  </script>
 </body>
+
 </html>
