@@ -124,6 +124,66 @@ class ShiftModel {
   }
 
   static generateId() { return `sh${Date.now()}`; }
+
+  static async hasActiveAppointments(id) {
+    const [shiftRows] = await db.query('SELECT * FROM Shifts WHERE id = ?', [id]);
+    if (shiftRows.length === 0) return false;
+    const shift = shiftRows[0];
+
+    // Get upcoming active appointments for this staff on this day of week
+    const [appts] = await db.query(`
+      SELECT a.id, a.time, sv.duration, a.date
+      FROM Appointments a
+      JOIN Services sv ON sv.id = a.serviceId
+      WHERE a.staffId = ? 
+        AND a.date >= CURDATE()
+        AND a.status NOT IN ('cancelled', 'completed')
+        AND DAYOFWEEK(a.date) = FIELD(?, 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat')
+    `, [shift.staffId, shift.day]);
+
+    const [sh, sm] = shift.startTime.split(':').map(Number);
+    const [eh, em] = shift.endTime.split(':').map(Number);
+    const shiftStart = sh * 60 + sm;
+    const shiftEnd = eh * 60 + em;
+
+    for (const a of appts) {
+      const [ah, am] = a.time.split(':').map(Number);
+      const apptStart = ah * 60 + am;
+      const apptEnd = apptStart + a.duration;
+      if (apptStart < shiftEnd && apptEnd > shiftStart) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  static async checkShiftConflict(staffId, day, startTime, endTime, excludeShiftId = null) {
+    let sql = 'SELECT * FROM Shifts WHERE staffId = ? AND day = ?';
+    const params = [staffId, day];
+    if (excludeShiftId) {
+      sql += ' AND id != ?';
+      params.push(excludeShiftId);
+    }
+    const [existingShifts] = await db.query(sql, params);
+
+    const [shNew, smNew] = startTime.split(':').map(Number);
+    const [ehNew, emNew] = endTime.split(':').map(Number);
+    const startNew = shNew * 60 + smNew;
+    const endNew = ehNew * 60 + emNew;
+
+    for (const shift of existingShifts) {
+      const [shEx, smEx] = shift.startTime.split(':').map(Number);
+      const [ehEx, emEx] = shift.endTime.split(':').map(Number);
+      const startEx = shEx * 60 + smEx;
+      const endEx = ehEx * 60 + emEx;
+
+      // Overlap condition: startNew < endEx AND endNew > startEx
+      if (startNew < endEx && endNew > startEx) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
 
 module.exports = ShiftModel;
