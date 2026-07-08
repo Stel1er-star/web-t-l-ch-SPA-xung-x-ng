@@ -92,28 +92,73 @@ exports.createUser = async (req, res) => {
 
 exports.updateUser = async (req, res) => {
   try {
-    const updateData = { ...req.body };
-    if (updateData.username !== undefined) {
-      updateData.username = updateData.username.trim();
-      if (updateData.username.length < 6 || updateData.username.length > 20) {
+    const { password, username, ...restData } = req.body;
+
+    // Validate & check username nếu có thay đổi
+    if (username !== undefined) {
+      const trimmed = username.trim();
+      if (trimmed.length < 6 || trimmed.length > 20) {
         return res.status(400).json({ error: 'Tên đăng nhập phải từ 6 đến 20 ký tự' });
       }
-      if (await UserModel.existsUsername(updateData.username, req.params.id)) {
+      if (await UserModel.existsUsername(trimmed, req.params.id)) {
         return res.status(409).json({ error: 'Username đã tồn tại' });
       }
     }
-    const user = await UserModel.update(req.params.id, updateData);
-    if (!user) return res.status(404).json({ error: 'Không tìm thấy' });
+
+    // Cập nhật các trường thông tin thông thường
+    const user = await UserModel.update(req.params.id, restData);
+    if (!user) return res.status(404).json({ error: 'Không tìm thấy người dùng' });
+
+    // Nếu Admin có truyền password mới thì mới cập nhật (không cần mật khẩu cũ)
+    if (password && password.trim() !== '') {
+      if (password.trim().length < 6) {
+        return res.status(400).json({ error: 'Mật khẩu phải có ít nhất 6 ký tự' });
+      }
+      await UserModel.updatePassword(req.params.id, password.trim());
+    }
+
     res.json(user);
-  } catch (err) { res.status(500).json({ error: 'Lỗi server' }); }
+  } catch (err) {
+    console.error('updateUser error:', err);
+    res.status(500).json({ error: 'Lỗi server' });
+  }
 };
 
 exports.deleteUser = async (req, res) => {
   try {
-    await UserModel.delete(req.params.id);
-    res.json({ message: 'Đã xóa tài khoản' });
+    const id = req.params.id;
+
+    // Kiểm tra xem người dùng có lịch sử dữ liệu không
+    // (đã từng đặt lịch hẹn, được phục vụ, hoặc đã để lại đánh giá)
+    const [[apptAsCustomer]] = await db.query(
+      'SELECT COUNT(*) as cnt FROM Appointments WHERE customerId = ?', [id]
+    );
+    const [[apptAsStaff]] = await db.query(
+      'SELECT COUNT(*) as cnt FROM Appointments WHERE staffId = ?', [id]
+    );
+    const [[reviewCount]] = await db.query(
+      'SELECT COUNT(*) as cnt FROM Reviews WHERE customerId = ? OR staffId = ?', [id, id]
+    );
+
+    const hasHistory = (apptAsCustomer.cnt + apptAsStaff.cnt + reviewCount.cnt) > 0;
+
+    if (hasHistory) {
+      // Có lịch sử => Vô hiệu hóa tài khoản (Soft Delete), giữ nguyên dữ liệu
+      await db.query('UPDATE Users SET is_active = 0 WHERE id = ?', [id]);
+      return res.json({
+        message: 'Tài khoản đã có lịch sử giao dịch, đã được vô hiệu hóa thay vì xóa.',
+        action: 'deactivated'
+      });
+    } else {
+      // Không có lịch sử => Xóa hoàn toàn khỏi database (Hard Delete)
+      await UserModel.delete(id);
+      return res.json({
+        message: 'Đã xóa tài khoản hoàn toàn.',
+        action: 'deleted'
+      });
+    }
   } catch (err) {
-    console.error(err);
+    console.error('deleteUser error:', err);
     res.status(500).json({ error: 'Lỗi server' });
   }
 };

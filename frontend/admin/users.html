@@ -402,10 +402,16 @@
     });
 
     async function deleteUser(id, name) {
-      if (!confirm(`Xóa vĩnh viễn tài khoản "${name}"?`)) return;
+      const msg = `Xóa tài khoản "${name}"?\n\n⚠️ Lưu ý:\n• Nếu tài khoản đã có lịch sử giao dịch → sẽ bị VÔ HIỆU HÓA (giữ lại dữ liệu).\n• Nếu tài khoản chưa có dữ liệu gì → sẽ bị XÓA HOÀN TOÀN khỏi hệ thống.`;
+      if (!confirm(msg)) return;
       try {
-        await API.deleteAdminUser(id);
-        Toast.success('Đã xóa người dùng'); loadUsers();
+        const result = await API.deleteAdminUser(id);
+        if (result.action === 'deactivated') {
+          Toast.warning('⚠️ Tài khoản đã có lịch sử giao dịch — đã được vô hiệu hóa thay vì xóa.');
+        } else {
+          Toast.success('✅ Đã xóa hoàn toàn tài khoản khỏi hệ thống.');
+        }
+        loadUsers();
       } catch (e) { Toast.error(e.message); }
     }
 
