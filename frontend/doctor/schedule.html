@@ -350,13 +350,19 @@
 
 <!-- Confirm Action Modal -->
 <div class="modal-overlay" id="confirm-action-modal">
-  <div class="modal" style="max-width:400px;text-align:center">
-    <div style="font-size:48px;margin-bottom:16px">❓</div>
-    <div class="modal-title" style="margin-bottom:8px">Xác nhận</div>
-    <p id="confirm-action-message" style="color:var(--text-secondary);font-size:14px;margin-bottom:24px"></p>
+  <div class="modal" style="max-width:420px;text-align:center;padding:40px 32px">
+    <div id="confirm-modal-icon-wrapper" style="width:72px;height:72px;border-radius:50%;background:rgba(124,58,237,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 0 20px rgba(124,58,237,0.2);transition:all 0.3s ease">
+      <svg id="confirm-modal-icon" xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--purple-lighter)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="transition:all 0.3s ease">
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+    </div>
+    <div class="modal-title" style="margin-bottom:12px;font-size:24px">Xác nhận</div>
+    <p id="confirm-action-message" style="color:var(--text-secondary);font-size:15px;margin-bottom:32px;line-height:1.5"></p>
     <div style="display:flex;gap:12px;justify-content:center">
-      <button class="btn btn-ghost" onclick="closeConfirmActionModal()">Hủy</button>
-      <button class="btn btn-primary" id="confirm-action-btn">Đồng ý</button>
+      <button class="btn btn-ghost" onclick="closeConfirmActionModal()" style="padding:12px 28px">Hủy</button>
+      <button class="btn btn-primary" id="confirm-action-btn" style="padding:12px 32px">Đồng ý</button>
     </div>
   </div>
 </div>
@@ -894,12 +900,33 @@ function openConfirmActionModal(id, action) {
   pendingConfirmAction = action;
   
   const btn = document.getElementById('confirm-action-btn');
+  const iconWrapper = document.getElementById('confirm-modal-icon-wrapper');
+  const iconSvg = document.getElementById('confirm-modal-icon');
+
   if (action === 'rejected') {
     btn.className = 'btn btn-danger';
     btn.innerHTML = 'Từ chối';
+    
+    if (iconWrapper) {
+      iconWrapper.style.background = 'rgba(244,63,94,0.1)';
+      iconWrapper.style.boxShadow = '0 0 20px rgba(244,63,94,0.2)';
+    }
+    if (iconSvg) {
+      iconSvg.innerHTML = '<path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line>';
+      iconSvg.setAttribute('stroke', 'var(--rose)');
+    }
   } else {
     btn.className = 'btn btn-success';
     btn.innerHTML = 'Đồng ý';
+    
+    if (iconWrapper) {
+      iconWrapper.style.background = 'rgba(16,185,129,0.1)';
+      iconWrapper.style.boxShadow = '0 0 20px rgba(16,185,129,0.2)';
+    }
+    if (iconSvg) {
+      iconSvg.innerHTML = '<circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line>';
+      iconSvg.setAttribute('stroke', 'var(--emerald)');
+    }
   }
   
   document.getElementById('confirm-action-modal').classList.add('open');
